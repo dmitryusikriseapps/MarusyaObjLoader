@@ -1,7 +1,6 @@
 package com.riseapps.marusyaobjloader;
 
-import com.riseapps.marusyaobjloader.model.GeometryDataModel;
-import com.riseapps.marusyaobjloader.model.MeshModel;
+import com.riseapps.marusyaobjloader.model.ResultModel;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,28 +11,29 @@ public class MarusyaObjLoaderImpl implements MarusyaObjLoader {
     }
 
     @Override
-    public MeshModel loadMesh(File objPath, boolean normalizeVertices, boolean flipTextureCoordinates) throws FileNotFoundException {
+    public ResultModel load(File objPath, boolean flipTextureCoordinates, boolean printLog) throws FileNotFoundException {
         if (objPath == null) {
             throw new FileNotFoundException("The file is null");
         } else if (!objPath.exists()) {
             throw new FileNotFoundException(String.format("%s not found", objPath.getAbsolutePath()));
         }
 
-        return loadMesh(objPath.getAbsolutePath(), normalizeVertices, flipTextureCoordinates);
+        return load(objPath.getAbsolutePath(), flipTextureCoordinates, printLog);
     }
 
     @Override
-    public GeometryDataModel loadGeometryData(File objPath, boolean normalizeVertices, boolean flipTextureCoordinates) throws FileNotFoundException {
-        if (objPath == null) {
-            throw new FileNotFoundException("The file is null.");
-        } else if (!objPath.exists()) {
-            throw new FileNotFoundException(String.format("%s not found", objPath.getAbsolutePath()));
-        }
-
-        return loadGeometryData(objPath.getAbsolutePath(), normalizeVertices, flipTextureCoordinates);
+    public void enableLog() {
+        enableLogJNI();
     }
 
-    private native MeshModel loadMesh(String objPath, boolean normalizeVertices, boolean flipTextureCoordinates);
+    @Override
+    public void disableLog() {
+        disableLogJNI();
+    }
 
-    private native GeometryDataModel loadGeometryData(String objPath, boolean normalizeVertices, boolean flipTextureCoordinates);
+    private native ResultModel load(String objPath, boolean flipTextureCoordinates, boolean printLog);
+
+    private native void enableLogJNI();
+
+    private native void disableLogJNI();
 }

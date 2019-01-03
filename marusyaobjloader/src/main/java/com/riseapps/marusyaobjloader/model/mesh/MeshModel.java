@@ -1,11 +1,11 @@
-package com.riseapps.marusyaobjloader.model;
+package com.riseapps.marusyaobjloader.model.mesh;
 
 public class MeshModel {
     private float[] vertices;
     private int[] indices;
     private int verticesSize;
     private int normalsSize;
-    private int textureCoordinatesSize;
+    private int texCoordsSize;
     private int colorsSize;
 
     public MeshModel() {
@@ -27,8 +27,8 @@ public class MeshModel {
         return normalsSize;
     }
 
-    public int getTextureCoordinatesSize() {
-        return textureCoordinatesSize;
+    public int getTexCoordsSize() {
+        return texCoordsSize;
     }
 
     public int getColorsSize() {
@@ -42,7 +42,7 @@ public class MeshModel {
                 indices != null ? indices.length : 0,
                 verticesSize,
                 normalsSize,
-                textureCoordinatesSize,
+                texCoordsSize,
                 colorsSize);
     }
 }

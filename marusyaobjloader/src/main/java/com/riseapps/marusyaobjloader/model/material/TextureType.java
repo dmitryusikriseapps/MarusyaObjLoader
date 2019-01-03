@@ -1,0 +1,12 @@
+package com.riseapps.marusyaobjloader.model.material;
+
+public enum TextureType {
+    TEXTURE_TYPE_NONE,
+    TEXTURE_TYPE_SPHERE,
+    TEXTURE_TYPE_CUBE_TOP,
+    TEXTURE_TYPE_CUBE_BOTTOM,
+    TEXTURE_TYPE_CUBE_FRONT,
+    TEXTURE_TYPE_CUBE_BACK,
+    TEXTURE_TYPE_CUBE_LEFT,
+    TEXTURE_TYPE_CUBE_RIGHT
+}
