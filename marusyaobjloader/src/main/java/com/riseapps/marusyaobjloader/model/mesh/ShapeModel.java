@@ -1,6 +1,4 @@
-package com.riseapps.marusyaobjloader.model;
-
-import com.riseapps.marusyaobjloader.model.mesh.MeshModel;
+package com.riseapps.marusyaobjloader.model.mesh;
 
 public class ShapeModel {
     private String name;

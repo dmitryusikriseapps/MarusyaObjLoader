@@ -1,6 +1,7 @@
 package com.riseapps.marusyaobjloader.model;
 
 import com.riseapps.marusyaobjloader.model.material.MaterialModel;
+import com.riseapps.marusyaobjloader.model.mesh.ShapeModel;
 
 import java.util.Arrays;
 

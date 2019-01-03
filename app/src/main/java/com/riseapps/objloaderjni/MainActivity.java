@@ -18,9 +18,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         final MarusyaObjLoader marusyaObjLoader = new MarusyaObjLoaderImpl();
         try {
-//            marusyaObjLoader.disableLog();
             final ResultModel centerTable3dMeshModel = marusyaObjLoader.load(new File(Environment.getExternalStorageDirectory(), "jni_test/center_table.obj"), true, true);
-//            System.out.println(centerTable3dMeshModel.toString());
+            System.out.println();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
