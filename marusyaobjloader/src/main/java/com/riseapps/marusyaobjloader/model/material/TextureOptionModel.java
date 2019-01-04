@@ -11,10 +11,11 @@ public class TextureOptionModel {
     private float[] scale;
     private float[] turbulence;
     private boolean clamp;
-    private String imfchan;
+    private char imfchan;
     private boolean blendU;
     private boolean blendV;
     private float bumpMultiplier;
+    private String colorspace;
 
     public TextureOptionModel() {
     }
@@ -51,7 +52,7 @@ public class TextureOptionModel {
         return clamp;
     }
 
-    public String getImfchan() {
+    public char getImfchan() {
         return imfchan;
     }
 
@@ -67,6 +68,10 @@ public class TextureOptionModel {
         return bumpMultiplier;
     }
 
+    public String getColorspace() {
+        return colorspace;
+    }
+
     @Override
     public String toString() {
         return "TextureOptionModel{" +
@@ -78,10 +83,11 @@ public class TextureOptionModel {
                 ", scale=" + Arrays.toString(scale) +
                 ", turbulence=" + Arrays.toString(turbulence) +
                 ", clamp=" + clamp +
-                ", imfchan=" + imfchan +
+                ", imfchan='" + imfchan + '\'' +
                 ", blendU=" + blendU +
                 ", blendV=" + blendV +
                 ", bumpMultiplier=" + bumpMultiplier +
+                ", colorspace='" + colorspace + '\'' +
                 '}';
     }
 }

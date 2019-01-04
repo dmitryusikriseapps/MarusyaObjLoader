@@ -9,7 +9,6 @@
 #include <sstream>
 #include <jni.h>
 #include <android/log.h>
-#include <syslog.h>
 
 #define LOG_TAG "MarusyaObjLoader"
 
@@ -114,14 +113,35 @@ typedef struct {
     jfieldID j_imfchan_field_id;
     jfieldID j_blend_u_field_id;
     jfieldID j_blend_v_field_id;
-    jfieldID j_bump_multiplier;
+    jfieldID j_bump_multiplier_field_id;
+    jfieldID j_colorspace_field_id;
 } TEXTURE_OPTION_MODEL_JNI;
+
+typedef struct {
+    jclass j_texture_type_class;
+    jfieldID j_texture_type_none_field_id;
+    jfieldID j_texture_type_sphere_field_id;
+    jfieldID j_texture_type_cube_top_field_id;
+    jfieldID j_texture_type_cube_bottom_field_id;
+    jfieldID j_texture_type_cube_front_field_id;
+    jfieldID j_texture_type_cube_back_field_id;
+    jfieldID j_texture_type_cube_left_field_id;
+    jfieldID j_texture_type_cube_right_field_id;
+} TEXTURE_TYPE_JNI;
+
+typedef struct {
+    jclass j_hash_map_class;
+    jmethodID j_hash_map_constructor;
+    jmethodID j_hash_map_put;
+} HASH_MAP_JNI;
 
 RESULT_MODEL_JNI * result_model_jni = NULL;
 SHAPE_MODEL_JNI * shape_model_jni = NULL;
 MESH_MODEL_JNI * mesh_model_jni = NULL;
 MATERIAL_MODEL_JNI * material_model_jni = NULL;
 TEXTURE_OPTION_MODEL_JNI * texture_option_model_jni = NULL;
+TEXTURE_TYPE_JNI * texture_type_jni = NULL;
+HASH_MAP_JNI * hash_map_jni = NULL;
 
 void LoadResultModelJNIDetails(JNIEnv * env) {
     result_model_jni = new RESULT_MODEL_JNI;
@@ -218,10 +238,31 @@ void LoadTextureOptionModelJNIDetails(JNIEnv * env) {
     texture_option_model_jni->j_scale_field_id = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "scale", "[F");
     texture_option_model_jni->j_turbulence_field_id = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "turbulence", "[F");
     texture_option_model_jni->j_clamp_field_id = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "clamp", "Z");
-    texture_option_model_jni->j_imfchan_field_id = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "imfchan", "Ljava/lang/String;");
+    texture_option_model_jni->j_imfchan_field_id = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "imfchan", "C");
     texture_option_model_jni->j_blend_u_field_id = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "blendU", "Z");
     texture_option_model_jni->j_blend_v_field_id = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "blendV", "Z");
-    texture_option_model_jni->j_bump_multiplier = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "bumpMultiplier", "F");
+    texture_option_model_jni->j_bump_multiplier_field_id = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "bumpMultiplier", "F");
+    texture_option_model_jni->j_colorspace_field_id = env->GetFieldID(texture_option_model_jni->j_texture_option_model_class, "colorspace", "Ljava/lang/String;");
+}
+
+void LoadTextureTypeJNIDetails(JNIEnv * env) {
+    texture_type_jni = new TEXTURE_TYPE_JNI;
+    texture_type_jni->j_texture_type_class = env->FindClass("com/riseapps/marusyaobjloader/model/material/TextureType");
+    texture_type_jni->j_texture_type_none_field_id = env->GetStaticFieldID(texture_type_jni->j_texture_type_class, "TEXTURE_TYPE_NONE", "Lcom/riseapps/marusyaobjloader/model/material/TextureType;");
+    texture_type_jni->j_texture_type_sphere_field_id = env->GetStaticFieldID(texture_type_jni->j_texture_type_class, "TEXTURE_TYPE_SPHERE", "Lcom/riseapps/marusyaobjloader/model/material/TextureType;");
+    texture_type_jni->j_texture_type_cube_top_field_id = env->GetStaticFieldID(texture_type_jni->j_texture_type_class, "TEXTURE_TYPE_CUBE_TOP", "Lcom/riseapps/marusyaobjloader/model/material/TextureType;");
+    texture_type_jni->j_texture_type_cube_bottom_field_id = env->GetStaticFieldID(texture_type_jni->j_texture_type_class, "TEXTURE_TYPE_CUBE_BOTTOM", "Lcom/riseapps/marusyaobjloader/model/material/TextureType;");
+    texture_type_jni->j_texture_type_cube_front_field_id = env->GetStaticFieldID(texture_type_jni->j_texture_type_class, "TEXTURE_TYPE_CUBE_FRONT", "Lcom/riseapps/marusyaobjloader/model/material/TextureType;");
+    texture_type_jni->j_texture_type_cube_back_field_id = env->GetStaticFieldID(texture_type_jni->j_texture_type_class, "TEXTURE_TYPE_CUBE_BACK", "Lcom/riseapps/marusyaobjloader/model/material/TextureType;");
+    texture_type_jni->j_texture_type_cube_left_field_id = env->GetStaticFieldID(texture_type_jni->j_texture_type_class, "TEXTURE_TYPE_CUBE_LEFT", "Lcom/riseapps/marusyaobjloader/model/material/TextureType;");
+    texture_type_jni->j_texture_type_cube_right_field_id = env->GetStaticFieldID(texture_type_jni->j_texture_type_class, "TEXTURE_TYPE_CUBE_RIGHT", "Lcom/riseapps/marusyaobjloader/model/material/TextureType;");
+}
+
+void LoadHashMapJNIDEtails(JNIEnv * env) {
+    hash_map_jni = new HASH_MAP_JNI;
+    hash_map_jni->j_hash_map_class = env->FindClass("java/util/HashMap");
+    hash_map_jni->j_hash_map_constructor = env->GetMethodID(hash_map_jni->j_hash_map_class, "<init>", "(I)V");
+    hash_map_jni->j_hash_map_put = env->GetMethodID(hash_map_jni->j_hash_map_class, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 }
 
 void NullJNIDetails() {
@@ -241,6 +282,14 @@ void NullJNIDetails() {
         delete texture_option_model_jni;
         texture_option_model_jni = NULL;
     }
+    if (texture_type_jni != NULL) {
+        delete texture_type_jni;
+        texture_type_jni = NULL;
+    }
+    if (hash_map_jni != NULL) {
+        delete hash_map_jni;
+        hash_map_jni = NULL;
+    }
 }
 
 void LoadJNIDetails(JNIEnv * env) {
@@ -249,6 +298,8 @@ void LoadJNIDetails(JNIEnv * env) {
     LoadMeshModelJNIDetails(env);
     LoadMaterialModelJNIDetails(env);
     LoadTextureOptionModelJNIDetails(env);
+    LoadTextureTypeJNIDetails(env);
+    LoadHashMapJNIDEtails(env);
 }
 
 std::string GetBaseDir(const std::string &filepath) {
@@ -351,6 +402,1283 @@ void GenerateShapeModels(JNIEnv * env,
     env->SetObjectField(j_result_model, result_model_jni->j_shape_models_field_id, shape_models);
 }
 
+void SetMaterialAmbientField(JNIEnv * env,
+                             jobject &j_material_model,
+                             const tinyobj::material_t &material) {
+    jfloatArray j_ambient_array = env->NewFloatArray((jsize) sizeof(material.ambient) / sizeof(material.ambient[0]));
+    jboolean is_copy_ambient;
+    jfloat *body_ambient = env->GetFloatArrayElements(j_ambient_array, &is_copy_ambient);
+    for (size_t i = 0; i < sizeof(material.ambient) / sizeof(material.ambient[0]); i++) {
+        body_ambient[i] = material.ambient[i];
+    }
+    env->SetFloatArrayRegion(j_ambient_array, 0, env->GetArrayLength(j_ambient_array), body_ambient);
+    env->SetObjectField(j_material_model, material_model_jni->j_ambient_field_id, j_ambient_array);
+}
+
+void SetMaterialDiffuseField(JNIEnv * env,
+                             jobject &j_material_model,
+                             const tinyobj::material_t &material) {
+    jfloatArray j_diffuse_array = env->NewFloatArray((jsize) sizeof(material.diffuse) / sizeof(material.diffuse[0]));
+    jboolean is_copy_diffuse;
+    jfloat *body_diffuse = env->GetFloatArrayElements(j_diffuse_array, &is_copy_diffuse);
+    for (size_t i = 0; i < sizeof(material.diffuse) / sizeof(material.diffuse[0]); i++) {
+        body_diffuse[i] = material.diffuse[i];
+    }
+    env->SetFloatArrayRegion(j_diffuse_array, 0, env->GetArrayLength(j_diffuse_array), body_diffuse);
+    env->SetObjectField(j_material_model, material_model_jni->j_diffuse_field_id, j_diffuse_array);
+}
+
+void SetMaterialSpecularField(JNIEnv * env,
+                              jobject &j_material_model,
+                              const tinyobj::material_t &material) {
+    jfloatArray j_specular_array = env->NewFloatArray((jsize) sizeof(material.specular) / sizeof(material.specular[0]));
+    jboolean is_copy_specular;
+    jfloat *body_specular = env->GetFloatArrayElements(j_specular_array, &is_copy_specular);
+    for (size_t i = 0; i < sizeof(material.specular) / sizeof(material.specular[0]); i++) {
+        body_specular[i] = material.specular[i];
+    }
+    env->SetFloatArrayRegion(j_specular_array, 0, env->GetArrayLength(j_specular_array), body_specular);
+    env->SetObjectField(j_material_model, material_model_jni->j_specular_field_id, j_specular_array);
+}
+
+void SetMaterialTransmittanceField(JNIEnv * env,
+                                   jobject &j_material_model,
+                                   const tinyobj::material_t &material) {
+    jfloatArray j_transmittance_array = env->NewFloatArray((jsize) sizeof(material.transmittance) / sizeof(material.transmittance[0]));
+    jboolean is_copy_transmittance;
+    jfloat *body_transmittance = env->GetFloatArrayElements(j_transmittance_array, &is_copy_transmittance);
+    for (size_t i = 0; i < sizeof(material.transmittance) / sizeof(material.transmittance[0]); i++) {
+        body_transmittance[i] = material.transmittance[i];
+    }
+    env->SetFloatArrayRegion(j_transmittance_array, 0, env->GetArrayLength(j_transmittance_array), body_transmittance);
+    env->SetObjectField(j_material_model, material_model_jni->j_transmittance_field_id, j_transmittance_array);
+}
+
+void SetMaterialEmissionField(JNIEnv * env,
+                              jobject &j_material_model,
+                              const tinyobj::material_t &material) {
+    jfloatArray j_emission_array = env->NewFloatArray((jsize) sizeof(material.emission) / sizeof(material.emission[0]));
+    jboolean is_copy_emission;
+    jfloat *body_emission = env->GetFloatArrayElements(j_emission_array, &is_copy_emission);
+    for (size_t i = 0; i < sizeof(material.emission) / sizeof(material.emission[0]); i++) {
+        body_emission[i] = material.emission[i];
+    }
+    env->SetFloatArrayRegion(j_emission_array, 0, env->GetArrayLength(j_emission_array), body_emission);
+    env->SetObjectField(j_material_model, material_model_jni->j_emission_field_id, j_emission_array);
+}
+
+void SetMaterialShininessField(JNIEnv * env,
+                               jobject &j_material_model,
+                               const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_shininess_field_id, material.shininess);
+}
+
+void SetMaterialIorField(JNIEnv * env,
+                         jobject &j_material_model,
+                         const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_ior_field_id, material.ior);
+}
+
+void SetMaterialDissolveField(JNIEnv * env,
+                              jobject &j_material_model,
+                              const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_dissolve_field_id, material.dissolve);
+}
+
+void SetMaterialIllumField(JNIEnv * env,
+                           jobject &j_material_model,
+                           const tinyobj::material_t &material) {
+    env->SetIntField(j_material_model, material_model_jni->j_illum_field_id, material.illum);
+}
+
+void SetMaterialDummyField(JNIEnv * env,
+                           jobject &j_material_model,
+                           const tinyobj::material_t &material) {
+    env->SetIntField(j_material_model, material_model_jni->j_dummy_field_id, material.dummy);
+}
+
+void SetMaterialAmbientTexnameField(JNIEnv * env,
+                                    jobject &j_material_model,
+                                    const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_ambient_texname_field_id, env->NewStringUTF(material.ambient_texname.c_str()));
+}
+
+void SetMaterialDiffuseTexnameField(JNIEnv * env,
+                                    jobject &j_material_model,
+                                    const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_diffuse_texname_field_id, env->NewStringUTF(material.diffuse_texname.c_str()));
+}
+
+void SetMaterialSpecularTexnameField(JNIEnv * env,
+                                     jobject &j_material_model,
+                                     const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_specular_texname_field_id, env->NewStringUTF(material.specular_texname.c_str()));
+}
+
+void SetMaterialSpecularHighlightTexnameField(JNIEnv * env,
+                                              jobject &j_material_model,
+                                              const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_specular_highlight_texname_field_id, env->NewStringUTF(material.specular_highlight_texname.c_str()));
+}
+
+void SetMaterialBumpTexnameField(JNIEnv * env,
+                                 jobject &j_material_model,
+                                 const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_bump_texname_field_id, env->NewStringUTF(material.bump_texname.c_str()));
+}
+
+void SetMaterialDisplacementTexnameField(JNIEnv * env,
+                                         jobject &j_material_model,
+                                         const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_displacement_texname_field_id, env->NewStringUTF(material.displacement_texname.c_str()));
+}
+
+void SetMaterialAlphaTexnameField(JNIEnv * env,
+                                  jobject &j_material_model,
+                                  const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_alpha_texname_field_id, env->NewStringUTF(material.alpha_texname.c_str()));
+}
+
+void SetMaterialReflectionTexnameField(JNIEnv * env,
+                                       jobject &j_material_model,
+                                       const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_reflection_texname_field_id, env->NewStringUTF(material.reflection_texname.c_str()));
+}
+
+void SetMaterialAmbientTexoptField(JNIEnv * env,
+                                   jobject &j_material_model,
+                                   const tinyobj::material_t &material) {
+    jobject j_ambient_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_ambient_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_ambient_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_ambient_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_ambient_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_ambient_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_ambient_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_ambient_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_ambient_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_ambient_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_ambient_texopt_model, texture_option_model_jni->j_type_field_id, j_ambient_texture_type);
+    // sharpness field
+    env->SetFloatField(j_ambient_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.ambient_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_ambient_texopt_model, texture_option_model_jni->j_brightness_field_id, material.ambient_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_ambient_texopt_model, texture_option_model_jni->j_contrast_field_id, material.ambient_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.ambient_texopt.origin_offset) / sizeof(material.ambient_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.ambient_texopt.origin_offset) / sizeof(material.ambient_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.ambient_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_ambient_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.ambient_texopt.scale) / sizeof(material.ambient_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.ambient_texopt.scale) / sizeof(material.ambient_texopt.scale[0]); i++) {
+        body_scale[i] = material.ambient_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_ambient_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.ambient_texopt.turbulence) / sizeof(material.ambient_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.ambient_texopt.turbulence) / sizeof(material.ambient_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.ambient_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_ambient_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_ambient_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.ambient_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_ambient_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.ambient_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_ambient_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.ambient_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_ambient_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.ambient_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_ambient_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.ambient_texopt.colorspace.c_str()));
+    // ambient texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_ambient_texopt_field_id, j_ambient_texopt_model);
+}
+
+void SetMaterialDiffuseTexoptField(JNIEnv * env,
+                                   jobject &j_material_model,
+                                   const tinyobj::material_t &material) {
+    jobject j_diffuse_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_diffuse_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_diffuse_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_diffuse_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_diffuse_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_diffuse_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_diffuse_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_diffuse_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_diffuse_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_diffuse_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_diffuse_texopt_model, texture_option_model_jni->j_type_field_id, j_diffuse_texture_type);
+    // sharpness field
+    env->SetFloatField(j_diffuse_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.diffuse_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_diffuse_texopt_model, texture_option_model_jni->j_brightness_field_id, material.diffuse_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_diffuse_texopt_model, texture_option_model_jni->j_contrast_field_id, material.diffuse_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.diffuse_texopt.origin_offset) / sizeof(material.diffuse_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.diffuse_texopt.origin_offset) / sizeof(material.diffuse_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.diffuse_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_diffuse_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.diffuse_texopt.scale) / sizeof(material.diffuse_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.diffuse_texopt.scale) / sizeof(material.diffuse_texopt.scale[0]); i++) {
+        body_scale[i] = material.diffuse_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_diffuse_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.diffuse_texopt.turbulence) / sizeof(material.diffuse_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.diffuse_texopt.turbulence) / sizeof(material.diffuse_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.diffuse_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_diffuse_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_diffuse_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.diffuse_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_diffuse_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.diffuse_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_diffuse_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.diffuse_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_diffuse_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.diffuse_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_diffuse_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.diffuse_texopt.colorspace.c_str()));
+    // diffuse texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_diffuse_texopt_field_id, j_diffuse_texopt_model);
+}
+
+void SetMaterialSpecularTexoptField(JNIEnv * env,
+                                    jobject &j_material_model,
+                                    const tinyobj::material_t &material) {
+    jobject j_specular_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_specular_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_specular_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_specular_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_specular_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_specular_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_specular_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_specular_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_specular_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_specular_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_specular_texopt_model, texture_option_model_jni->j_type_field_id, j_specular_texture_type);
+    // sharpness field
+    env->SetFloatField(j_specular_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.specular_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_specular_texopt_model, texture_option_model_jni->j_brightness_field_id, material.specular_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_specular_texopt_model, texture_option_model_jni->j_contrast_field_id, material.specular_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.specular_texopt.origin_offset) / sizeof(material.specular_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.specular_texopt.origin_offset) / sizeof(material.specular_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.specular_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_specular_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.specular_texopt.scale) / sizeof(material.specular_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.specular_texopt.scale) / sizeof(material.specular_texopt.scale[0]); i++) {
+        body_scale[i] = material.specular_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_specular_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.specular_texopt.turbulence) / sizeof(material.specular_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.specular_texopt.turbulence) / sizeof(material.specular_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.specular_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_specular_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_specular_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.specular_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_specular_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.specular_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_specular_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.specular_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_specular_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.specular_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_specular_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.specular_texopt.colorspace.c_str()));
+    // specular texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_specular_texopt_field_id, j_specular_texopt_model);
+}
+
+void SetMaterialSpecularHighlightTexoptField(JNIEnv * env,
+                                             jobject &j_material_model,
+                                             const tinyobj::material_t &material) {
+    jobject j_specular_highlight_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_specular_highlight_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_specular_highlight_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_specular_highlight_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_specular_highlight_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_specular_highlight_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_specular_highlight_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_specular_highlight_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_specular_highlight_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_specular_highlight_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_specular_highlight_texopt_model, texture_option_model_jni->j_type_field_id, j_specular_highlight_texture_type);
+    // sharpness field
+    env->SetFloatField(j_specular_highlight_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.specular_highlight_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_specular_highlight_texopt_model, texture_option_model_jni->j_brightness_field_id, material.specular_highlight_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_specular_highlight_texopt_model, texture_option_model_jni->j_contrast_field_id, material.specular_highlight_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.specular_highlight_texopt.origin_offset) / sizeof(material.specular_highlight_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.specular_highlight_texopt.origin_offset) / sizeof(material.specular_highlight_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.specular_highlight_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_specular_highlight_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.specular_highlight_texopt.scale) / sizeof(material.specular_highlight_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.specular_highlight_texopt.scale) / sizeof(material.specular_highlight_texopt.scale[0]); i++) {
+        body_scale[i] = material.specular_highlight_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_specular_highlight_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.specular_highlight_texopt.turbulence) / sizeof(material.specular_highlight_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.specular_highlight_texopt.turbulence) / sizeof(material.specular_highlight_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.specular_highlight_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_specular_highlight_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_specular_highlight_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.specular_highlight_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_specular_highlight_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.specular_highlight_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_specular_highlight_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.specular_highlight_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_specular_highlight_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.specular_highlight_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_specular_highlight_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.specular_highlight_texopt.colorspace.c_str()));
+    // specular highlight texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_specular_highlight_texopt_field_id, j_specular_highlight_texopt_model);
+}
+
+void SetMaterialBumpTexoptField(JNIEnv * env,
+                                jobject &j_material_model,
+                                const tinyobj::material_t &material) {
+    jobject j_bump_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_bump_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_bump_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_bump_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_bump_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_bump_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_bump_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_bump_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_bump_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_bump_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_bump_texopt_model, texture_option_model_jni->j_type_field_id, j_bump_texture_type);
+    // sharpness field
+    env->SetFloatField(j_bump_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.bump_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_bump_texopt_model, texture_option_model_jni->j_brightness_field_id, material.bump_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_bump_texopt_model, texture_option_model_jni->j_contrast_field_id, material.bump_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.bump_texopt.origin_offset) / sizeof(material.bump_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.bump_texopt.origin_offset) / sizeof(material.bump_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.bump_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_bump_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.bump_texopt.scale) / sizeof(material.bump_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.bump_texopt.scale) / sizeof(material.bump_texopt.scale[0]); i++) {
+        body_scale[i] = material.bump_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_bump_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.bump_texopt.turbulence) / sizeof(material.bump_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.bump_texopt.turbulence) / sizeof(material.bump_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.bump_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_bump_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_bump_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.bump_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_bump_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.bump_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_bump_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.bump_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_bump_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.bump_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_bump_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.bump_texopt.colorspace.c_str()));
+    // bump texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_bump_texopt_field_id, j_bump_texopt_model);
+}
+
+void SetMaterialDisplacementTexoptField(JNIEnv * env,
+                                        jobject &j_material_model,
+                                        const tinyobj::material_t &material) {
+    jobject j_displacement_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_displacement_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_displacement_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_displacement_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_displacement_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_displacement_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_displacement_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_displacement_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_displacement_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_displacement_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_displacement_texopt_model, texture_option_model_jni->j_type_field_id, j_displacement_texture_type);
+    // sharpness field
+    env->SetFloatField(j_displacement_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.displacement_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_displacement_texopt_model, texture_option_model_jni->j_brightness_field_id, material.displacement_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_displacement_texopt_model, texture_option_model_jni->j_contrast_field_id, material.displacement_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.displacement_texopt.origin_offset) / sizeof(material.displacement_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.displacement_texopt.origin_offset) / sizeof(material.displacement_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.displacement_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_displacement_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.displacement_texopt.scale) / sizeof(material.displacement_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.displacement_texopt.scale) / sizeof(material.displacement_texopt.scale[0]); i++) {
+        body_scale[i] = material.displacement_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_displacement_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.displacement_texopt.turbulence) / sizeof(material.displacement_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.displacement_texopt.turbulence) / sizeof(material.displacement_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.displacement_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_displacement_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_displacement_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.displacement_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_displacement_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.displacement_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_displacement_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.displacement_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_displacement_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.displacement_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_displacement_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.displacement_texopt.colorspace.c_str()));
+    // displacement texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_displacement_texopt_field_id, j_displacement_texopt_model);
+}
+
+void SetMaterialAlphaTexoptField(JNIEnv * env,
+                                 jobject &j_material_model,
+                                 const tinyobj::material_t &material) {
+    jobject j_alpha_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_alpha_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_alpha_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_alpha_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_alpha_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_alpha_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_alpha_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_alpha_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_alpha_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_alpha_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_alpha_texopt_model, texture_option_model_jni->j_type_field_id, j_alpha_texture_type);
+    // sharpness field
+    env->SetFloatField(j_alpha_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.alpha_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_alpha_texopt_model, texture_option_model_jni->j_brightness_field_id, material.alpha_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_alpha_texopt_model, texture_option_model_jni->j_contrast_field_id, material.alpha_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.alpha_texopt.origin_offset) / sizeof(material.alpha_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.alpha_texopt.origin_offset) / sizeof(material.alpha_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.alpha_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_alpha_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.alpha_texopt.scale) / sizeof(material.alpha_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.alpha_texopt.scale) / sizeof(material.alpha_texopt.scale[0]); i++) {
+        body_scale[i] = material.alpha_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_alpha_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.alpha_texopt.turbulence) / sizeof(material.alpha_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.alpha_texopt.turbulence) / sizeof(material.alpha_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.alpha_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_alpha_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_alpha_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.alpha_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_alpha_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.alpha_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_alpha_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.alpha_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_alpha_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.alpha_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_alpha_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.alpha_texopt.colorspace.c_str()));
+    // alpha texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_alpha_texopt_field_id, j_alpha_texopt_model);
+}
+
+void SetMaterialReflectionTexoptField(JNIEnv * env,
+                                      jobject &j_material_model,
+                                      const tinyobj::material_t &material) {
+    jobject j_reflection_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_reflection_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_reflection_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_reflection_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_reflection_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_reflection_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_reflection_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_reflection_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_reflection_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_reflection_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_reflection_texopt_model, texture_option_model_jni->j_type_field_id, j_reflection_texture_type);
+    // sharpness field
+    env->SetFloatField(j_reflection_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.reflection_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_reflection_texopt_model, texture_option_model_jni->j_brightness_field_id, material.reflection_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_reflection_texopt_model, texture_option_model_jni->j_contrast_field_id, material.reflection_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.reflection_texopt.origin_offset) / sizeof(material.reflection_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.reflection_texopt.origin_offset) / sizeof(material.reflection_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.reflection_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_reflection_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.reflection_texopt.scale) / sizeof(material.reflection_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.reflection_texopt.scale) / sizeof(material.reflection_texopt.scale[0]); i++) {
+        body_scale[i] = material.reflection_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_reflection_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.reflection_texopt.turbulence) / sizeof(material.reflection_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.reflection_texopt.turbulence) / sizeof(material.reflection_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.reflection_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_reflection_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_reflection_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.reflection_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_reflection_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.reflection_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_reflection_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.reflection_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_reflection_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.reflection_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_reflection_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.reflection_texopt.colorspace.c_str()));
+    // reflection texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_reflection_texopt_field_id, j_reflection_texopt_model);
+}
+
+void SetMaterialRoughnessField(JNIEnv * env,
+                               jobject &j_material_model,
+                               const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_roughness_field_id, material.roughness);
+}
+
+void SetMaterialMetallicField(JNIEnv * env,
+                              jobject &j_material_model,
+                              const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_metallic_field_id, material.metallic);
+}
+
+void SetMaterialSheenField(JNIEnv * env,
+                           jobject &j_material_model,
+                           const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_sheen_field_id, material.sheen);
+}
+
+void SetMaterialClearcoatThicknessField(JNIEnv * env,
+                                        jobject &j_material_model,
+                                        const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_clearcoat_thickness_field_id, material.clearcoat_thickness);
+}
+
+void SetMaterialClearcoatRoughnessField(JNIEnv * env,
+                                        jobject &j_material_model,
+                                        const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_clearcoat_roughness_field_id, material.clearcoat_roughness);
+}
+
+void SetMaterialAnisotrophyField(JNIEnv * env,
+                                 jobject &j_material_model,
+                                 const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_anisotropy_field_id, material.anisotropy);
+}
+
+void SetMaterialAnisotrophyRotationField(JNIEnv * env,
+                                         jobject &j_material_model,
+                                         const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_anisotropy_rotation_field_id, material.anisotropy_rotation);
+}
+
+void SetMaterialPad0Field(JNIEnv * env,
+                          jobject &j_material_model,
+                          const tinyobj::material_t &material) {
+    env->SetFloatField(j_material_model, material_model_jni->j_pad0_field_id, material.pad0);
+}
+
+void SetMaterialRoughnessTexnameField(JNIEnv * env,
+                                     jobject &j_material_model,
+                                     const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_roughness_texname_field_id, env->NewStringUTF(material.roughness_texname.c_str()));
+}
+
+void SetMaterialMetallicTexnameField(JNIEnv * env,
+                                     jobject &j_material_model,
+                                     const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_metallic_texname_field_id, env->NewStringUTF(material.metallic_texname.c_str()));
+}
+
+void SetMaterialSheenTexnameField(JNIEnv * env,
+                                  jobject &j_material_model,
+                                  const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_sheen_texname_field_id, env->NewStringUTF(material.sheen_texname.c_str()));
+}
+
+void SetMaterialEmissiveTexnameField(JNIEnv * env,
+                                     jobject &j_material_model,
+                                     const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_emissive_texname_field_id, env->NewStringUTF(material.emissive_texname.c_str()));
+}
+
+void SetMaterialNormalTexnameField(JNIEnv * env,
+                                   jobject &j_material_model,
+                                   const tinyobj::material_t &material) {
+    env->SetObjectField(j_material_model, material_model_jni->j_normal_texname_field_id, env->NewStringUTF(material.normal_texname.c_str()));
+}
+
+void SetMaterialRoughnessTexoptField(JNIEnv * env,
+                                     jobject &j_material_model,
+                                     const tinyobj::material_t &material) {
+    jobject j_roughness_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_roughness_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_roughness_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_roughness_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_roughness_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_roughness_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_roughness_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_roughness_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_roughness_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_roughness_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_roughness_texopt_model, texture_option_model_jni->j_type_field_id, j_roughness_texture_type);
+    // sharpness field
+    env->SetFloatField(j_roughness_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.roughness_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_roughness_texopt_model, texture_option_model_jni->j_brightness_field_id, material.roughness_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_roughness_texopt_model, texture_option_model_jni->j_contrast_field_id, material.roughness_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.roughness_texopt.origin_offset) / sizeof(material.roughness_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.roughness_texopt.origin_offset) / sizeof(material.roughness_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.roughness_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_roughness_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.roughness_texopt.scale) / sizeof(material.roughness_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.roughness_texopt.scale) / sizeof(material.roughness_texopt.scale[0]); i++) {
+        body_scale[i] = material.roughness_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_roughness_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.roughness_texopt.turbulence) / sizeof(material.roughness_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.roughness_texopt.turbulence) / sizeof(material.roughness_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.roughness_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_roughness_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_roughness_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.roughness_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_roughness_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.roughness_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_roughness_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.roughness_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_roughness_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.roughness_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_roughness_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.roughness_texopt.colorspace.c_str()));
+    // roughness texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_roughness_texopt_field_id, j_roughness_texopt_model);
+}
+
+void SetMaterialMetallicTexoptField(JNIEnv * env,
+                                    jobject &j_material_model,
+                                    const tinyobj::material_t &material) {
+    jobject j_metallic_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_metallic_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_metallic_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_metallic_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_metallic_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_metallic_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_metallic_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_metallic_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_metallic_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_metallic_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_metallic_texopt_model, texture_option_model_jni->j_type_field_id, j_metallic_texture_type);
+    // sharpness field
+    env->SetFloatField(j_metallic_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.metallic_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_metallic_texopt_model, texture_option_model_jni->j_brightness_field_id, material.metallic_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_metallic_texopt_model, texture_option_model_jni->j_contrast_field_id, material.metallic_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.metallic_texopt.origin_offset) / sizeof(material.metallic_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.metallic_texopt.origin_offset) / sizeof(material.metallic_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.metallic_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_metallic_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.metallic_texopt.scale) / sizeof(material.metallic_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.metallic_texopt.scale) / sizeof(material.metallic_texopt.scale[0]); i++) {
+        body_scale[i] = material.metallic_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_metallic_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.metallic_texopt.turbulence) / sizeof(material.metallic_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.metallic_texopt.turbulence) / sizeof(material.metallic_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.metallic_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_metallic_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_metallic_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.metallic_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_metallic_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.metallic_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_metallic_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.metallic_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_metallic_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.metallic_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_metallic_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.metallic_texopt.colorspace.c_str()));
+    // metallic texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_metallic_texopt_field_id, j_metallic_texopt_model);
+}
+
+void SetMaterialSheenTexoptField(JNIEnv * env,
+                                 jobject &j_material_model,
+                                 const tinyobj::material_t &material) {
+    jobject j_sheen_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_sheen_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_sheen_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_sheen_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_sheen_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_sheen_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_sheen_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_sheen_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_sheen_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_sheen_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_sheen_texopt_model, texture_option_model_jni->j_type_field_id, j_sheen_texture_type);
+    // sharpness field
+    env->SetFloatField(j_sheen_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.sheen_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_sheen_texopt_model, texture_option_model_jni->j_brightness_field_id, material.sheen_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_sheen_texopt_model, texture_option_model_jni->j_contrast_field_id, material.sheen_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.sheen_texopt.origin_offset) / sizeof(material.sheen_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.sheen_texopt.origin_offset) / sizeof(material.sheen_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.sheen_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_sheen_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.sheen_texopt.scale) / sizeof(material.sheen_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.sheen_texopt.scale) / sizeof(material.sheen_texopt.scale[0]); i++) {
+        body_scale[i] = material.sheen_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_sheen_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.sheen_texopt.turbulence) / sizeof(material.sheen_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.sheen_texopt.turbulence) / sizeof(material.sheen_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.sheen_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_sheen_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_sheen_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.sheen_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_sheen_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.sheen_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_sheen_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.sheen_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_sheen_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.sheen_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_sheen_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.sheen_texopt.colorspace.c_str()));
+    // sheen texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_sheen_texopt_field_id, j_sheen_texopt_model);
+}
+
+void SetMaterialEmissiveTexoptField(JNIEnv * env,
+                                    jobject &j_material_model,
+                                    const tinyobj::material_t &material) {
+    jobject j_emissive_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_emissive_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_emissive_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_emissive_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_emissive_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_emissive_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_emissive_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_emissive_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_emissive_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_emissive_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_emissive_texopt_model, texture_option_model_jni->j_type_field_id, j_emissive_texture_type);
+    // sharpness field
+    env->SetFloatField(j_emissive_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.emissive_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_emissive_texopt_model, texture_option_model_jni->j_brightness_field_id, material.emissive_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_emissive_texopt_model, texture_option_model_jni->j_contrast_field_id, material.emissive_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.emissive_texopt.origin_offset) / sizeof(material.emissive_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.emissive_texopt.origin_offset) / sizeof(material.emissive_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.emissive_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_emissive_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.emissive_texopt.scale) / sizeof(material.emissive_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.emissive_texopt.scale) / sizeof(material.emissive_texopt.scale[0]); i++) {
+        body_scale[i] = material.emissive_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_emissive_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.emissive_texopt.turbulence) / sizeof(material.emissive_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.emissive_texopt.turbulence) / sizeof(material.emissive_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.emissive_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_emissive_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_emissive_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.emissive_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_emissive_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.emissive_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_emissive_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.emissive_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_emissive_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.emissive_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_emissive_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.emissive_texopt.colorspace.c_str()));
+    // emissive texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_emissive_texopt_field_id, j_emissive_texopt_model);
+}
+
+void SetMaterialNormalTexoptField(JNIEnv * env,
+                                  jobject &j_material_model,
+                                  const tinyobj::material_t &material) {
+    jobject j_normal_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
+    jobject j_normal_texture_type = NULL;
+    switch (material.ambient_texopt.type) {
+        case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
+            j_normal_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_SPHERE:
+            j_normal_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_sphere_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_TOP:
+            j_normal_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_top_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BOTTOM:
+            j_normal_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_bottom_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_FRONT:
+            j_normal_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_front_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_BACK:
+            j_normal_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_back_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_LEFT:
+            j_normal_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_left_field_id);
+            break;
+        case tinyobj::texture_type_t::TEXTURE_TYPE_CUBE_RIGHT:
+            j_normal_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_cube_right_field_id);
+            break;
+    }
+    // type field
+    env->SetObjectField(j_normal_texopt_model, texture_option_model_jni->j_type_field_id, j_normal_texture_type);
+    // sharpness field
+    env->SetFloatField(j_normal_texopt_model, texture_option_model_jni->j_sharpness_field_id, material.normal_texopt.sharpness);
+    // brightness field
+    env->SetFloatField(j_normal_texopt_model, texture_option_model_jni->j_brightness_field_id, material.normal_texopt.brightness);
+    // contrast field
+    env->SetFloatField(j_normal_texopt_model, texture_option_model_jni->j_contrast_field_id, material.normal_texopt.contrast);
+    // origin offset field
+    jfloatArray j_origin_offset_array = env->NewFloatArray((jsize) sizeof(material.normal_texopt.origin_offset) / sizeof(material.normal_texopt.origin_offset[0]));
+    jboolean is_copy_origin_offset;
+    jfloat *body_origin_offset = env->GetFloatArrayElements(j_origin_offset_array, &is_copy_origin_offset);
+    for (size_t i = 0; i < sizeof(material.normal_texopt.origin_offset) / sizeof(material.normal_texopt.origin_offset[0]); i++) {
+        body_origin_offset[i] = material.normal_texopt.origin_offset[i];
+    }
+    env->SetFloatArrayRegion(j_origin_offset_array, 0, env->GetArrayLength(j_origin_offset_array), body_origin_offset);
+    env->SetObjectField(j_normal_texopt_model, texture_option_model_jni->j_origin_offset_field_id, j_origin_offset_array);
+    // scale field
+    jfloatArray j_scale_array = env->NewFloatArray((jsize) sizeof(material.normal_texopt.scale) / sizeof(material.normal_texopt.scale[0]));
+    jboolean is_copy_scale;
+    jfloat *body_scale = env->GetFloatArrayElements(j_scale_array, &is_copy_scale);
+    for (size_t i = 0; i < sizeof(material.normal_texopt.scale) / sizeof(material.normal_texopt.scale[0]); i++) {
+        body_scale[i] = material.normal_texopt.scale[i];
+    }
+    env->SetFloatArrayRegion(j_scale_array, 0, env->GetArrayLength(j_scale_array), body_scale);
+    env->SetObjectField(j_normal_texopt_model, texture_option_model_jni->j_scale_field_id, j_scale_array);
+    // turbulence field
+    jfloatArray j_turbulence_array = env->NewFloatArray((jsize) sizeof(material.normal_texopt.turbulence) / sizeof(material.normal_texopt.turbulence[0]));
+    jboolean is_copy_turbulence;
+    jfloat *body_turbulence = env->GetFloatArrayElements(j_turbulence_array, &is_copy_turbulence);
+    for (size_t i = 0; i < sizeof(material.normal_texopt.turbulence) / sizeof(material.normal_texopt.turbulence[0]); i++) {
+        body_turbulence[i] = material.normal_texopt.turbulence[i];
+    }
+    env->SetFloatArrayRegion(j_turbulence_array, 0, env->GetArrayLength(j_turbulence_array), body_turbulence);
+    env->SetObjectField(j_normal_texopt_model, texture_option_model_jni->j_turbulence_field_id, j_turbulence_array);
+    // clamp field
+    env->SetBooleanField(j_normal_texopt_model, texture_option_model_jni->j_clamp_field_id, (jboolean) material.normal_texopt.clamp);
+    // imfchan field
+    env->SetCharField(j_normal_texopt_model, texture_option_model_jni->j_imfchan_field_id, (jchar) material.normal_texopt.imfchan);
+    // blendu field
+    env->SetBooleanField(j_normal_texopt_model, texture_option_model_jni->j_blend_u_field_id, (jboolean) material.normal_texopt.blendu);
+    // blendv field
+    env->SetBooleanField(j_normal_texopt_model, texture_option_model_jni->j_blend_v_field_id, (jboolean) material.normal_texopt.blendv);
+    // colorspace field
+    env->SetObjectField(j_normal_texopt_model, texture_option_model_jni->j_colorspace_field_id, env->NewStringUTF(material.normal_texopt.colorspace.c_str()));
+    // normal texopt field
+    env->SetObjectField(j_material_model, material_model_jni->j_normal_texopt_field_id, j_normal_texopt_model);
+}
+
+void SetMaterialPad2Field(JNIEnv * env,
+                          jobject &j_material_model,
+                          const tinyobj::material_t &material) {
+    env->SetIntField(j_material_model, material_model_jni->j_pad2_field_id, material.pad2);
+}
+
+void SetMaterialUnknownParameterField(JNIEnv * env,
+                                      jobject &j_material_model,
+                                      const tinyobj::material_t &material) {
+    jobject j_unknown_parameter = env->NewObject(hash_map_jni->j_hash_map_class, hash_map_jni->j_hash_map_constructor, material.unknown_parameter.size());
+    for (auto it : material.unknown_parameter) {
+        env->CallObjectMethod(j_unknown_parameter, hash_map_jni->j_hash_map_put, env->NewStringUTF(it.first.c_str()), env->NewStringUTF(it.second.c_str()));
+    }
+    env->SetObjectField(j_material_model, material_model_jni->j_unknown_parameter_field_id, j_unknown_parameter);
+}
+
 void GenerateMaterialModels(JNIEnv * env,
                             jobject &j_result_model,
                             const std::vector<tinyobj::material_t> &materials) {
@@ -362,105 +1690,53 @@ void GenerateMaterialModels(JNIEnv * env,
         // material model
         env->SetObjectField(j_material_model, material_model_jni->j_name_field_id, env->NewStringUTF(material.name.c_str()));
         env->SetObjectArrayElement(material_models, (jsize) m, j_material_model);
-        // ambient field
-        jfloatArray j_ambient_array = env->NewFloatArray((jsize) sizeof(material.ambient) / sizeof(material.ambient[0]));
-        jboolean is_copy_ambient;
-        jfloat *body_ambient = env->GetFloatArrayElements(j_ambient_array, &is_copy_ambient);
-        for (size_t i = 0; i < sizeof(material.ambient) / sizeof(material.ambient[0]); i++) {
-            body_ambient[i] = material.ambient[i];
-        }
-        env->SetFloatArrayRegion(j_ambient_array, 0, env->GetArrayLength(j_ambient_array), body_ambient);
-        env->SetObjectField(j_material_model, material_model_jni->j_ambient_field_id, j_ambient_array);
-        // diffuse field
-        jfloatArray j_diffuse_array = env->NewFloatArray((jsize) sizeof(material.diffuse) / sizeof(material.diffuse[0]));
-        jboolean is_copy_diffuse;
-        jfloat *body_diffuse = env->GetFloatArrayElements(j_diffuse_array, &is_copy_diffuse);
-        for (size_t i = 0; i < sizeof(material.diffuse) / sizeof(material.diffuse[0]); i++) {
-            body_diffuse[i] = material.diffuse[i];
-        }
-        env->SetFloatArrayRegion(j_diffuse_array, 0, env->GetArrayLength(j_diffuse_array), body_diffuse);
-        env->SetObjectField(j_material_model, material_model_jni->j_diffuse_field_id, j_diffuse_array);
-        // specular field
-        jfloatArray j_specular_array = env->NewFloatArray((jsize) sizeof(material.specular) / sizeof(material.specular[0]));
-        jboolean is_copy_specular;
-        jfloat *body_specular = env->GetFloatArrayElements(j_specular_array, &is_copy_specular);
-        for (size_t i = 0; i < sizeof(material.specular) / sizeof(material.specular[0]); i++) {
-            body_specular[i] = material.specular[i];
-        }
-        env->SetFloatArrayRegion(j_specular_array, 0, env->GetArrayLength(j_specular_array), body_specular);
-        env->SetObjectField(j_material_model, material_model_jni->j_specular_field_id, j_specular_array);
-        // transmittance field
-        jfloatArray j_transmittance_array = env->NewFloatArray((jsize) sizeof(material.transmittance) / sizeof(material.transmittance[0]));
-        jboolean is_copy_transmittance;
-        jfloat *body_transmittance = env->GetFloatArrayElements(j_transmittance_array, &is_copy_transmittance);
-        for (size_t i = 0; i < sizeof(material.transmittance) / sizeof(material.transmittance[0]); i++) {
-            body_transmittance[i] = material.transmittance[i];
-        }
-        env->SetFloatArrayRegion(j_transmittance_array, 0, env->GetArrayLength(j_transmittance_array), body_transmittance);
-        env->SetObjectField(j_material_model, material_model_jni->j_transmittance_field_id, j_transmittance_array);
-        // emission field
-        jfloatArray j_emission_array = env->NewFloatArray((jsize) sizeof(material.emission) / sizeof(material.emission[0]));
-        jboolean is_copy_emission;
-        jfloat *body_emission = env->GetFloatArrayElements(j_emission_array, &is_copy_emission);
-        for (size_t i = 0; i < sizeof(material.emission) / sizeof(material.emission[0]); i++) {
-            body_emission[i] = material.emission[i];
-        }
-        env->SetFloatArrayRegion(j_emission_array, 0, env->GetArrayLength(j_emission_array), body_emission);
-        env->SetObjectField(j_material_model, material_model_jni->j_emission_field_id, j_emission_array);
-        // shininess field
-        env->SetFloatField(j_material_model, material_model_jni->j_shininess_field_id, material.shininess);
-        // ior field
-        env->SetFloatField(j_material_model, material_model_jni->j_ior_field_id, material.ior);
-        // dissolve field
-        env->SetFloatField(j_material_model, material_model_jni->j_dissolve_field_id, material.dissolve);
-        // illum field
-        env->SetIntField(j_material_model, material_model_jni->j_illum_field_id, material.illum);
-        // dummy field
-        env->SetIntField(j_material_model, material_model_jni->j_dummy_field_id, material.dummy);
-        // ambient texname field
-        env->SetObjectField(j_material_model, material_model_jni->j_ambient_texname_field_id, env->NewStringUTF(material.ambient_texname.c_str()));
-        // diffuse texname field
-        env->SetObjectField(j_material_model, material_model_jni->j_diffuse_texname_field_id, env->NewStringUTF(material.diffuse_texname.c_str()));
-        // specular texname field
-        env->SetObjectField(j_material_model, material_model_jni->j_specular_texname_field_id, env->NewStringUTF(material.specular_texname.c_str()));
-        // specular highlight texname field
-        env->SetObjectField(j_material_model, material_model_jni->j_specular_highlight_texname_field_id, env->NewStringUTF(material.specular_highlight_texname.c_str()));
-        // bump texname field
-        env->SetObjectField(j_material_model, material_model_jni->j_bump_texname_field_id, env->NewStringUTF(material.bump_texname.c_str()));
-        // displacement texname field
-        env->SetObjectField(j_material_model, material_model_jni->j_displacement_texname_field_id, env->NewStringUTF(material.displacement_texname.c_str()));
-        // alpha texname field
-        env->SetObjectField(j_material_model, material_model_jni->j_alpha_texname_field_id, env->NewStringUTF(material.alpha_texname.c_str()));
-        // reflection texname field
-        env->SetObjectField(j_material_model, material_model_jni->j_reflection_texname_field_id, env->NewStringUTF(material.reflection_texname.c_str()));
-        // ambient texopt field
-        // diffuse texopt field
-        // specular texop field
-        // specular highlight texopt field
-        // bump texopt field
-        // displacement texopt field
-        // alpha texopt field
-        // reflection texopt field
-        // roughness field
-        // metallic field
-        // sheen field
-        // clearcoat thickness field
-        // clearcoat roughness field
-        // anisotropy field
-        // anisotropy rotation field
-        // pad0 field
-        // roughness texname field
-        // metallic texname field
-        // sheen texname field
-        // emissive texname field
-        // normal texname field
-        // roughness texopt field
-        // metallic texopt field
-        // sheen texopt field
-        // emissive texopt field
-        // normal texopt field
-        // pad2 field
-        // unknown parameter
+
+        SetMaterialAmbientField(env, j_material_model, material);
+        SetMaterialDiffuseField(env, j_material_model, material);
+        SetMaterialSpecularField(env, j_material_model, material);
+        SetMaterialTransmittanceField(env, j_material_model, material);
+        SetMaterialEmissionField(env, j_material_model, material);
+        SetMaterialShininessField(env, j_material_model, material);
+        SetMaterialIorField(env, j_material_model, material);
+        SetMaterialDissolveField(env, j_material_model, material);
+        SetMaterialIllumField(env, j_material_model, material);
+        SetMaterialDummyField(env, j_material_model, material);
+        SetMaterialAmbientTexnameField(env, j_material_model, material);
+        SetMaterialDiffuseTexnameField(env, j_material_model, material);
+        SetMaterialSpecularTexnameField(env, j_material_model, material);
+        SetMaterialSpecularHighlightTexnameField(env, j_material_model, material);
+        SetMaterialBumpTexnameField(env, j_material_model, material);
+        SetMaterialDisplacementTexnameField(env, j_material_model, material);
+        SetMaterialAlphaTexnameField(env, j_material_model, material);
+        SetMaterialReflectionTexnameField(env, j_material_model, material);
+        SetMaterialAmbientTexoptField(env, j_material_model, material);
+        SetMaterialDiffuseTexoptField(env, j_material_model, material);
+        SetMaterialSpecularTexoptField(env, j_material_model, material);
+        SetMaterialSpecularHighlightTexoptField(env, j_material_model, material);
+        SetMaterialBumpTexoptField(env, j_material_model, material);
+        SetMaterialDisplacementTexoptField(env, j_material_model, material);
+        SetMaterialAlphaTexoptField(env, j_material_model, material);
+        SetMaterialReflectionTexoptField(env, j_material_model, material);
+        SetMaterialRoughnessField(env, j_material_model, material);
+        SetMaterialMetallicField(env, j_material_model, material);
+        SetMaterialSheenField(env, j_material_model, material);
+        SetMaterialClearcoatThicknessField(env, j_material_model, material);
+        SetMaterialClearcoatRoughnessField(env, j_material_model, material);
+        SetMaterialAnisotrophyField(env, j_material_model, material);
+        SetMaterialAnisotrophyRotationField(env, j_material_model, material);
+        SetMaterialPad0Field(env, j_material_model, material);
+        SetMaterialRoughnessTexnameField(env, j_material_model, material);
+        SetMaterialMetallicTexnameField(env, j_material_model, material);
+        SetMaterialSheenTexnameField(env, j_material_model, material);
+        SetMaterialEmissiveTexnameField(env, j_material_model, material);
+        SetMaterialNormalTexnameField(env, j_material_model, material);
+        SetMaterialRoughnessTexoptField(env, j_material_model, material);
+        SetMaterialMetallicTexoptField(env, j_material_model, material);
+        SetMaterialSheenTexoptField(env, j_material_model, material);
+        SetMaterialEmissiveTexoptField(env, j_material_model, material);
+        SetMaterialNormalTexoptField(env, j_material_model, material);
+        SetMaterialPad2Field(env, j_material_model, material);
+        SetMaterialUnknownParameterField(env, j_material_model, material);
     }
     env->SetObjectField(j_result_model, result_model_jni->j_material_models_field_id, material_models);
 }
@@ -492,6 +1768,7 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
     NullJNIDetails();
     LoadJNIDetails(env);
 
+    // input files
     std::string input_file = env->GetStringUTFChars(obj_path, (jboolean *) false);
     std::string base_dir = GetBaseDir(input_file);
 
@@ -527,6 +1804,7 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
     }
     log("indices size -> %lu", indicesSize);
 
+    // generate result model
     jobject j_result_model = env->NewObject(result_model_jni->j_result_model_class, result_model_jni->j_result_model_constructor);
     GenerateShapeModels(env, j_result_model, attrib, shapes, flip_texcoord);
     GenerateMaterialModels(env, j_result_model, materials);
