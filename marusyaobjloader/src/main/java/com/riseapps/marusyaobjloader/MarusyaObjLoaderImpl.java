@@ -11,14 +11,14 @@ public class MarusyaObjLoaderImpl implements MarusyaObjLoader {
     }
 
     @Override
-    public ResultModel load(File objPath, boolean flipTextureCoordinates, boolean printLog) throws FileNotFoundException {
+    public ResultModel load(File objPath, boolean flipTextureCoordinates) throws FileNotFoundException {
         if (objPath == null) {
             throw new FileNotFoundException("The file is null");
         } else if (!objPath.exists()) {
             throw new FileNotFoundException(String.format("%s not found", objPath.getAbsolutePath()));
         }
 
-        return load(objPath.getAbsolutePath(), flipTextureCoordinates, printLog);
+        return load(objPath.getAbsolutePath(), flipTextureCoordinates);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class MarusyaObjLoaderImpl implements MarusyaObjLoader {
         disableLogJNI();
     }
 
-    private native ResultModel load(String objPath, boolean flipTextureCoordinates, boolean printLog);
+    private native ResultModel load(String objPath, boolean flipTextureCoordinates);
 
     private native void enableLogJNI();
 

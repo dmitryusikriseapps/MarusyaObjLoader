@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 public interface MarusyaObjLoader {
-    ResultModel load(File objPath, boolean flipTextureCoordinates, boolean printLog) throws FileNotFoundException;
+    ResultModel load(File objPath, boolean flipTextureCoordinates) throws FileNotFoundException;
 
     void enableLog();
 
