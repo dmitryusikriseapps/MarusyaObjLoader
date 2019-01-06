@@ -9,10 +9,9 @@
 #include <sstream>
 #include <jni.h>
 #include <android/log.h>
+#include <chrono>
 
 #define LOG_TAG "MarusyaObjLoader"
-
-#define CLOCKS_PER_MS 1000
 
 const int VERTICES_NUM_COMPONENTS = 3;
 const int NORMALS_NUM_COMPONENTS = 3;
@@ -1749,14 +1748,15 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
                                                              jstring obj_path,
                                                              jboolean flip_texcoord) {
     log("***********************************************************************************", NULL);
-    clock_t startTime = clock();
-    clock_t startTotalTime = clock();
+    std::chrono::time_point<std::chrono::high_resolution_clock> t_start, t_start_total, t_end;
+    t_start = std::chrono::high_resolution_clock::now();
+    t_start_total = std::chrono::high_resolution_clock::now();
 
     ReleaseJNIDetails();
     LoadJNIDetails(env);
 
-    clock_t endTime = clock();
-    log("Time to loading JNI details -> %ld ms", (endTime - startTime) / CLOCKS_PER_MS);
+    t_end = std::chrono::high_resolution_clock::now();
+    log("Time to loading JNI details -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count());
 
     // input files
     std::string input_file = env->GetStringUTFChars(obj_path, (jboolean *) false);
@@ -1765,7 +1765,7 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
     log("Start parsing -> %s", input_file.c_str());
 
     // parsing
-    startTime = clock();
+    t_start = std::chrono::high_resolution_clock::now();
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -1774,8 +1774,8 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
     std::string err;
     bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, input_file.c_str(), base_dir.c_str());
 
-    endTime = clock();
-    log("Time to native parsing -> %ld ms", (endTime - startTime) / CLOCKS_PER_MS);
+    t_end = std::chrono::high_resolution_clock::now();
+    log("Time to native parsing -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count());
 
     // when error
     if (!err.empty() && !ret) {
@@ -1799,26 +1799,26 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
     log("indices size -> %lu", indicesSize);
 
     // generate result model
-    startTime = clock();
+    t_start = std::chrono::high_resolution_clock::now();
 
     jobject j_result_model = env->NewObject(result_model_jni->j_result_model_class, result_model_jni->j_result_model_constructor);
     GenerateShapeModels(env, j_result_model, attrib, shapes, flip_texcoord);
 
-    endTime = clock();
-    log("Time to generate shape models -> %ld ms", (endTime - startTime) / CLOCKS_PER_MS);
+    t_end = std::chrono::high_resolution_clock::now();
+    log("Time to generate shape models -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count());
 
-    startTime = clock();
+    t_start = std::chrono::high_resolution_clock::now();
 
     GenerateMaterialModels(env, j_result_model, materials);
-    endTime = clock();
+    t_end = std::chrono::high_resolution_clock::now();
 
-    log("Time to generate material models -> %ld ms", (endTime - startTime) / CLOCKS_PER_MS);
+    log("Time to generate material models -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count());
 
     GenerateMessages(env, j_result_model, warn, err);
     ReleaseJNIDetails();
 
-    endTime = clock();
-    log("Total time -> %ld ms", (endTime - startTotalTime) / CLOCKS_PER_MS);
+    t_end = std::chrono::high_resolution_clock::now();
+    log("Total time -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start_total).count());
     log("***********************************************************************************", NULL);
 
     return j_result_model;
