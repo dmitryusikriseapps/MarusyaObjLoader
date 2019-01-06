@@ -1748,24 +1748,34 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
                                                              jobject instance,
                                                              jstring obj_path,
                                                              jboolean flip_texcoord) {
+    log("***********************************************************************************", NULL);
     clock_t startTime = clock();
+    clock_t startTotalTime = clock();
+
     ReleaseJNIDetails();
     LoadJNIDetails(env);
+
+    clock_t endTime = clock();
+    log("Time to loading JNI details -> %ld ms", (endTime - startTime) / CLOCKS_PER_MS);
 
     // input files
     std::string input_file = env->GetStringUTFChars(obj_path, (jboolean *) false);
     std::string base_dir = GetBaseDir(input_file);
 
-    log("***********************************************************************************", NULL);
     log("Start parsing -> %s", input_file.c_str());
 
     // parsing
+    startTime = clock();
+
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn;
     std::string err;
     bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, input_file.c_str(), base_dir.c_str());
+
+    endTime = clock();
+    log("Time to native parsing -> %ld ms", (endTime - startTime) / CLOCKS_PER_MS);
 
     // when error
     if (!err.empty() && !ret) {
@@ -1789,14 +1799,26 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
     log("indices size -> %lu", indicesSize);
 
     // generate result model
+    startTime = clock();
+
     jobject j_result_model = env->NewObject(result_model_jni->j_result_model_class, result_model_jni->j_result_model_constructor);
     GenerateShapeModels(env, j_result_model, attrib, shapes, flip_texcoord);
+
+    endTime = clock();
+    log("Time to generate shape models -> %ld ms", (endTime - startTime) / CLOCKS_PER_MS);
+
+    startTime = clock();
+
     GenerateMaterialModels(env, j_result_model, materials);
+    endTime = clock();
+
+    log("Time to generate material models -> %ld ms", (endTime - startTime) / CLOCKS_PER_MS);
+
     GenerateMessages(env, j_result_model, warn, err);
     ReleaseJNIDetails();
 
-    clock_t endTime = clock();
-    log("Time to parsing -> %ld ms", (endTime - startTime) / CLOCKS_PER_MS);
+    endTime = clock();
+    log("Total time -> %ld ms", (endTime - startTotalTime) / CLOCKS_PER_MS);
     log("***********************************************************************************", NULL);
 
     return j_result_model;
