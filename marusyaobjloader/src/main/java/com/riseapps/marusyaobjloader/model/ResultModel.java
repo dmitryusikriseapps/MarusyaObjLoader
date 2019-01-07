@@ -8,6 +8,10 @@ import java.util.Arrays;
 public class ResultModel {
     private ShapeModel[] shapeModels;
     private MaterialModel[] materialModels;
+    private long verticesSize;
+    private long normalsSize;
+    private long texcoordsSize;
+    private long colorsSize;
     private String warn;
     private String error;
 
@@ -20,6 +24,22 @@ public class ResultModel {
 
     public MaterialModel[] getMaterialModels() {
         return materialModels;
+    }
+
+    public long getVerticesSize() {
+        return verticesSize;
+    }
+
+    public long getNormalsSize() {
+        return normalsSize;
+    }
+
+    public long getTexcoordsSize() {
+        return texcoordsSize;
+    }
+
+    public long getColorsSize() {
+        return colorsSize;
     }
 
     public String getWarn() {
@@ -35,6 +55,10 @@ public class ResultModel {
         return "ResultModel{" +
                 "shapeModels=" + Arrays.toString(shapeModels) +
                 ", materialModels=" + Arrays.toString(materialModels) +
+                ", verticesSize=" + verticesSize +
+                ", normalsSize=" + normalsSize +
+                ", texcoordsSize=" + texcoordsSize +
+                ", colorsSize=" + colorsSize +
                 ", warn='" + warn + '\'' +
                 ", error='" + error + '\'' +
                 '}';

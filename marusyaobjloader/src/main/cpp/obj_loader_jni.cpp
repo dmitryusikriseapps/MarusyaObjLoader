@@ -24,6 +24,10 @@ typedef struct {
     jmethodID j_result_model_constructor;
     jfieldID j_shape_models_field_id;
     jfieldID j_material_models_field_id;
+    jfieldID j_vertices_size_field_id;
+    jfieldID j_normals_size_field_id;
+    jfieldID j_texcoords_size_field_id;
+    jfieldID j_colors_size_field_id;
     jfieldID j_warn_field_id;
     jfieldID j_error_field_id;
 } RESULT_MODEL_JNI;
@@ -144,6 +148,10 @@ void LoadResultModelJNIDetails(JNIEnv * env) {
     result_model_jni->j_result_model_constructor = env->GetMethodID(result_model_jni->j_result_model_class, "<init>", "()V");
     result_model_jni->j_shape_models_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "shapeModels", "[Lcom/riseapps/marusyaobjloader/model/mesh/ShapeModel;");
     result_model_jni->j_material_models_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "materialModels", "[Lcom/riseapps/marusyaobjloader/model/material/MaterialModel;");
+    result_model_jni->j_vertices_size_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "verticesSize", "J");
+    result_model_jni->j_normals_size_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "normalsSize", "J");
+    result_model_jni->j_texcoords_size_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "texcoordsSize", "J");
+    result_model_jni->j_colors_size_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "colorsSize", "J");
     result_model_jni->j_warn_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "warn", "Ljava/lang/String;");
     result_model_jni->j_error_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "error", "Ljava/lang/String;");
 }
@@ -1724,6 +1732,19 @@ void GenerateMaterialModels(JNIEnv * env,
     env->SetObjectField(j_result_model, result_model_jni->j_material_models_field_id, material_models);
 }
 
+void GenerateAttributes(JNIEnv * env,
+                        jobject &j_result_model,
+                        const tinyobj::attrib_t &attrib) {
+    // vertices size field
+    env->SetLongField(j_result_model, result_model_jni->j_vertices_size_field_id, attrib.vertices.size());
+    // normals size field
+    env->SetLongField(j_result_model, result_model_jni->j_normals_size_field_id, attrib.normals.size());
+    // texcoords size field
+    env->SetLongField(j_result_model, result_model_jni->j_texcoords_size_field_id, attrib.texcoords.size());
+    // colors size field
+    env->SetLongField(j_result_model, result_model_jni->j_colors_size_field_id, attrib.colors.size());
+}
+
 void GenerateMessages(JNIEnv * env,
                       jobject &j_result_model,
                       const std::string &warn,
@@ -1748,34 +1769,23 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
                                                              jstring obj_path,
                                                              jboolean flip_texcoord) {
     log("***********************************************************************************", NULL);
-    std::chrono::time_point<std::chrono::high_resolution_clock> t_start, t_start_total, t_end;
+    std::chrono::time_point<std::chrono::high_resolution_clock> t_start, t_end;
     t_start = std::chrono::high_resolution_clock::now();
-    t_start_total = std::chrono::high_resolution_clock::now();
 
     ReleaseJNIDetails();
     LoadJNIDetails(env);
-
-    t_end = std::chrono::high_resolution_clock::now();
-    log("Time to loading JNI details -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count());
-
     // input files
     std::string input_file = env->GetStringUTFChars(obj_path, (jboolean *) false);
     std::string base_dir = GetBaseDir(input_file);
 
     log("Start parsing -> %s", input_file.c_str());
-
     // parsing
-    t_start = std::chrono::high_resolution_clock::now();
-
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn;
     std::string err;
     bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, input_file.c_str(), base_dir.c_str());
-
-    t_end = std::chrono::high_resolution_clock::now();
-    log("Time to native parsing -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count());
 
     // when error
     if (!err.empty() && !ret) {
@@ -1787,7 +1797,7 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
 
     // print parse data
     log("shapes size -> %lu", shapes.size());
-    log("material size -> %lu", materials.size());
+    log("materials size -> %lu", materials.size());
     log("vertices size -> %lu", attrib.vertices.size());
     log("normals size -> %lu", attrib.normals.size());
     log("texcoords size -> %lu", attrib.texcoords.size());
@@ -1799,26 +1809,15 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
     log("indices size -> %lu", indicesSize);
 
     // generate result model
-    t_start = std::chrono::high_resolution_clock::now();
-
     jobject j_result_model = env->NewObject(result_model_jni->j_result_model_class, result_model_jni->j_result_model_constructor);
     GenerateShapeModels(env, j_result_model, attrib, shapes, flip_texcoord);
-
-    t_end = std::chrono::high_resolution_clock::now();
-    log("Time to generate shape models -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count());
-
-    t_start = std::chrono::high_resolution_clock::now();
-
     GenerateMaterialModels(env, j_result_model, materials);
-    t_end = std::chrono::high_resolution_clock::now();
-
-    log("Time to generate material models -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count());
-
+    GenerateAttributes(env, j_result_model, attrib);
     GenerateMessages(env, j_result_model, warn, err);
     ReleaseJNIDetails();
 
     t_end = std::chrono::high_resolution_clock::now();
-    log("Total time -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start_total).count());
+    log("Time to parse -> %ld ms", std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count());
     log("***********************************************************************************", NULL);
 
     return j_result_model;
