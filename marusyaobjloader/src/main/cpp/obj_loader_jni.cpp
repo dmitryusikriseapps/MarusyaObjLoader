@@ -1767,6 +1767,7 @@ JNIEXPORT jobject JNICALL
 Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
                                                              jobject instance,
                                                              jstring obj_path,
+                                                             jstring mtl_path,
                                                              jboolean flip_texcoord) {
     log("***********************************************************************************", NULL);
     std::chrono::time_point<std::chrono::high_resolution_clock> t_start, t_end;
@@ -1775,17 +1776,18 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
     ReleaseJNIDetails();
     LoadJNIDetails(env);
     // input files
-    std::string input_file = env->GetStringUTFChars(obj_path, (jboolean *) false);
-    std::string base_dir = GetBaseDir(input_file);
+    std::string obj_file_path = env->GetStringUTFChars(obj_path, (jboolean *) false);
+    std::string mtl_file_path = env->GetStringUTFChars(mtl_path, (jboolean *) false);
+    std::string mtl_base_dir = GetBaseDir(mtl_file_path);
 
-    log("Start parsing -> %s", input_file.c_str());
+    log("Start parsing -> obj: %s, mtl: %s", obj_file_path.c_str(), mtl_file_path.c_str());
     // parsing
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn;
     std::string err;
-    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, input_file.c_str(), base_dir.c_str());
+    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, obj_file_path.c_str(), mtl_base_dir.c_str());
 
     // when error
     if (!err.empty() && !ret) {
@@ -1793,7 +1795,7 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
         return GenerateResultModelDueToError(env, err);
     }
 
-    log("End parsing -> %s", input_file.c_str());
+    log("End parsing -> %s", obj_file_path.c_str());
 
     // print parse data
     log("shapes size -> %lu", shapes.size());
