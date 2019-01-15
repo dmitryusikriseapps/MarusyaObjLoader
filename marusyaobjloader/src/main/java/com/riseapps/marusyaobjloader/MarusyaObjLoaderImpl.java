@@ -22,22 +22,22 @@ public class MarusyaObjLoaderImpl implements MarusyaObjLoader {
             throw new FileNotFoundException(String.format("%s not found", mtlPath.getAbsolutePath()));
         }
 
-        return load(objPath.getAbsolutePath(), mtlPath.getAbsolutePath(), flipTextureCoordinates);
+        return nativeLoad(objPath.getAbsolutePath(), mtlPath.getAbsolutePath(), flipTextureCoordinates);
     }
 
     @Override
     public void enableLog() {
-        enableLogJNI();
+        nativeEnableLog();
     }
 
     @Override
     public void disableLog() {
-        disableLogJNI();
+        nativeDisableLog();
     }
 
-    private native ResultModel load(String objPath, String mtlPath, boolean flipTextureCoordinates);
+    private native ResultModel nativeLoad(String objPath, String mtlPath, boolean flipTextureCoordinates);
 
-    private native void enableLogJNI();
+    private native void nativeEnableLog();
 
-    private native void disableLogJNI();
+    private native void nativeDisableLog();
 }

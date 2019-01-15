@@ -1764,7 +1764,7 @@ void log(const char* pattern, ArgTypes... args) {
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
+Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_nativeLoad(JNIEnv *env,
                                                              jobject instance,
                                                              jstring obj_path,
                                                              jstring mtl_path,
@@ -1827,12 +1827,12 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_load(JNIEnv *env,
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_enableLogJNI(JNIEnv *env, jobject instance) {
+Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_nativeEnableLog(JNIEnv *env, jobject instance) {
     print_log = true;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_disableLogJNI(JNIEnv *env, jobject instance) {
+Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_nativeDisableLog(JNIEnv *env, jobject instance) {
     print_log = false;
 }
