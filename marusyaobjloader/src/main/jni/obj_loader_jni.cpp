@@ -15,7 +15,6 @@
 
 const int VERTICES_NUM_COMPONENTS = 3;
 const int NORMALS_NUM_COMPONENTS = 3;
-const int COLORS_NUM_COMPONENTS = 3;
 const int TEX_COORDS_NUM_COMPONENTS = 2;
 
 bool print_log = true;
@@ -25,10 +24,6 @@ typedef struct {
     jmethodID j_result_model_constructor;
     jfieldID j_shape_models_field_id;
     jfieldID j_material_models_field_id;
-    jfieldID j_vertices_size_field_id;
-    jfieldID j_normals_size_field_id;
-    jfieldID j_texcoords_size_field_id;
-    jfieldID j_colors_size_field_id;
     jfieldID j_warn_field_id;
     jfieldID j_error_field_id;
 } RESULT_MODEL_JNI;
@@ -45,6 +40,9 @@ typedef struct {
     jmethodID j_mesh_model_constructor;
     jfieldID j_vertices_field_id;
     jfieldID j_indices_field_id;
+    jfieldID j_vertices_size_field_id;
+    jfieldID j_normals_size_field_id;
+    jfieldID j_texcoords_size_field_id;
 } MESH_MODEL_JNI;
 
 typedef struct {
@@ -149,10 +147,6 @@ void LoadResultModelJNIDetails(JNIEnv * env) {
     result_model_jni->j_result_model_constructor = env->GetMethodID(result_model_jni->j_result_model_class, "<init>", "()V");
     result_model_jni->j_shape_models_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "shapeModels", "[Lcom/riseapps/marusyaobjloader/model/mesh/ShapeModel;");
     result_model_jni->j_material_models_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "materialModels", "[Lcom/riseapps/marusyaobjloader/model/material/MaterialModel;");
-    result_model_jni->j_vertices_size_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "verticesSize", "J");
-    result_model_jni->j_normals_size_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "normalsSize", "J");
-    result_model_jni->j_texcoords_size_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "texcoordsSize", "J");
-    result_model_jni->j_colors_size_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "colorsSize", "J");
     result_model_jni->j_warn_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "warn", "Ljava/lang/String;");
     result_model_jni->j_error_field_id = env->GetFieldID(result_model_jni->j_result_model_class, "error", "Ljava/lang/String;");
 }
@@ -171,6 +165,9 @@ void LoadMeshModelJNIDetails(JNIEnv * env) {
     mesh_model_jni->j_mesh_model_constructor = env->GetMethodID(mesh_model_jni->j_mesh_model_class, "<init>", "()V");
     mesh_model_jni->j_vertices_field_id = env->GetFieldID(mesh_model_jni->j_mesh_model_class, "vertices", "[F");
     mesh_model_jni->j_indices_field_id = env->GetFieldID(mesh_model_jni->j_mesh_model_class, "indices", "[I");
+    mesh_model_jni->j_vertices_size_field_id = env->GetFieldID(mesh_model_jni->j_mesh_model_class, "verticesSize", "J");
+    mesh_model_jni->j_normals_size_field_id = env->GetFieldID(mesh_model_jni->j_mesh_model_class, "normalsSize", "J");
+    mesh_model_jni->j_texcoords_size_field_id = env->GetFieldID(mesh_model_jni->j_mesh_model_class, "texcoordsSize", "J");
 }
 
 void LoadMaterialModelJNIDetails(JNIEnv * env) {
@@ -382,6 +379,12 @@ void GenerateShapeModels(JNIEnv * env,
         env->SetObjectField(j_mesh_model, mesh_model_jni->j_vertices_field_id, vertices_array);
         // indices field
         env->SetObjectField(j_mesh_model, mesh_model_jni->j_indices_field_id, indices_array);
+        // vertices size field
+        env->SetLongField(j_mesh_model, mesh_model_jni->j_vertices_size_field_id, shape.mesh.indices.size() * VERTICES_NUM_COMPONENTS);
+        // normals size field
+        env->SetLongField(j_mesh_model, mesh_model_jni->j_normals_size_field_id, shape.mesh.indices.size() * NORMALS_NUM_COMPONENTS);
+        // texcoords size field
+        env->SetLongField(j_mesh_model, mesh_model_jni->j_texcoords_size_field_id, shape.mesh.indices.size() * TEX_COORDS_NUM_COMPONENTS);
         // shape model
         // name field
         env->SetObjectField(j_shape_model, shape_model_jni->j_name_field_id, env->NewStringUTF(shape.name.c_str()));
@@ -1733,19 +1736,6 @@ void GenerateMaterialModels(JNIEnv * env,
     env->SetObjectField(j_result_model, result_model_jni->j_material_models_field_id, material_models);
 }
 
-void GenerateAttributes(JNIEnv * env,
-                        jobject &j_result_model,
-                        const tinyobj::attrib_t &attrib) {
-    // vertices size field
-    env->SetLongField(j_result_model, result_model_jni->j_vertices_size_field_id, attrib.vertices.size() / VERTICES_NUM_COMPONENTS);
-    // normals size field
-    env->SetLongField(j_result_model, result_model_jni->j_normals_size_field_id, attrib.normals.size() / NORMALS_NUM_COMPONENTS);
-    // texcoords size field
-    env->SetLongField(j_result_model, result_model_jni->j_texcoords_size_field_id, attrib.texcoords.size() / TEX_COORDS_NUM_COMPONENTS);
-    // colors size field
-    env->SetLongField(j_result_model, result_model_jni->j_colors_size_field_id, attrib.colors.size() / COLORS_NUM_COMPONENTS);
-}
-
 void GenerateMessages(JNIEnv * env,
                       jobject &j_result_model,
                       const std::string &warn,
@@ -1815,7 +1805,6 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_nativeLoad(JNIEnv *env,
     jobject j_result_model = env->NewObject(result_model_jni->j_result_model_class, result_model_jni->j_result_model_constructor);
     GenerateShapeModels(env, j_result_model, attrib, shapes, flip_texcoord);
     GenerateMaterialModels(env, j_result_model, materials);
-    GenerateAttributes(env, j_result_model, attrib);
     GenerateMessages(env, j_result_model, warn, err);
     ReleaseJNIDetails();
 
