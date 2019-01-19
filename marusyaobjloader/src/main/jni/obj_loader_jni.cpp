@@ -15,6 +15,7 @@
 
 const int VERTICES_NUM_COMPONENTS = 3;
 const int NORMALS_NUM_COMPONENTS = 3;
+const int COLORS_NUM_COMPONENTS = 3;
 const int TEX_COORDS_NUM_COMPONENTS = 2;
 
 bool print_log = true;
@@ -134,13 +135,13 @@ typedef struct {
     jmethodID j_hash_map_put;
 } HASH_MAP_JNI;
 
-RESULT_MODEL_JNI * result_model_jni = NULL;
-SHAPE_MODEL_JNI * shape_model_jni = NULL;
-MESH_MODEL_JNI * mesh_model_jni = NULL;
-MATERIAL_MODEL_JNI * material_model_jni = NULL;
-TEXTURE_OPTION_MODEL_JNI * texture_option_model_jni = NULL;
-TEXTURE_TYPE_JNI * texture_type_jni = NULL;
-HASH_MAP_JNI * hash_map_jni = NULL;
+RESULT_MODEL_JNI * result_model_jni = nullptr;
+SHAPE_MODEL_JNI * shape_model_jni = nullptr;
+MESH_MODEL_JNI * mesh_model_jni = nullptr;
+MATERIAL_MODEL_JNI * material_model_jni = nullptr;
+TEXTURE_OPTION_MODEL_JNI * texture_option_model_jni = nullptr;
+TEXTURE_TYPE_JNI * texture_type_jni = nullptr;
+HASH_MAP_JNI * hash_map_jni = nullptr;
 
 void LoadResultModelJNIDetails(JNIEnv * env) {
     result_model_jni = new RESULT_MODEL_JNI;
@@ -265,29 +266,29 @@ void LoadHashMapJNIDetails(JNIEnv *env) {
 }
 
 void ReleaseJNIDetails() {
-    if (result_model_jni != NULL) {
+    if (result_model_jni != nullptr) {
         delete result_model_jni;
-        result_model_jni = NULL;
+        result_model_jni = nullptr;
     }
-    if (shape_model_jni != NULL) {
+    if (shape_model_jni != nullptr) {
         delete shape_model_jni;
-        shape_model_jni = NULL;
+        shape_model_jni = nullptr;
     }
-    if (mesh_model_jni != NULL) {
+    if (mesh_model_jni != nullptr) {
         delete mesh_model_jni;
-        mesh_model_jni = NULL;
+        mesh_model_jni = nullptr;
     }
-    if (texture_option_model_jni != NULL) {
+    if (texture_option_model_jni != nullptr) {
         delete texture_option_model_jni;
-        texture_option_model_jni = NULL;
+        texture_option_model_jni = nullptr;
     }
-    if (texture_type_jni != NULL) {
+    if (texture_type_jni != nullptr) {
         delete texture_type_jni;
-        texture_type_jni = NULL;
+        texture_type_jni = nullptr;
     }
-    if (hash_map_jni != NULL) {
+    if (hash_map_jni != nullptr) {
         delete hash_map_jni;
-        hash_map_jni = NULL;
+        hash_map_jni = nullptr;
     }
 }
 
@@ -309,7 +310,7 @@ std::string GetBaseDir(const std::string &filepath) {
     }
 }
 
-jobject GenerateResultModelDueToError(JNIEnv * env, const std::string err) {
+jobject GenerateResultModelDueToError(JNIEnv * env, const std::string &err) {
     jobject j_result_model = env->NewObject(result_model_jni->j_result_model_class, result_model_jni->j_result_model_constructor);
     jstring j_error = env->NewStringUTF(err.c_str());
     env->SetObjectField(j_result_model, result_model_jni->j_error_field_id, j_error);
@@ -318,10 +319,10 @@ jobject GenerateResultModelDueToError(JNIEnv * env, const std::string err) {
 
 void GenerateShapeModels(JNIEnv * env,
                          jobject &j_result_model,
-                         const tinyobj::attrib_t attrib,
-                         const std::vector<tinyobj::shape_t> shapes,
+                         const tinyobj::attrib_t &attrib,
+                         const std::vector<tinyobj::shape_t> &shapes,
                          const jboolean flip_texcoords) {
-    jobjectArray shape_models = env->NewObjectArray((jsize) shapes.size(), shape_model_jni->j_shape_model_class, NULL);
+    jobjectArray shape_models = env->NewObjectArray((jsize) shapes.size(), shape_model_jni->j_shape_model_class, nullptr);
     for (size_t s = 0; s < shapes.size(); s++) {
         jobject j_shape_model = env->NewObject(shape_model_jni->j_shape_model_class, shape_model_jni->j_shape_model_constructor);
         jobject j_mesh_model = env->NewObject(mesh_model_jni->j_mesh_model_class, mesh_model_jni->j_mesh_model_constructor);
@@ -329,9 +330,9 @@ void GenerateShapeModels(JNIEnv * env,
         // vertices
         tinyobj::shape_t shape = shapes[s];
         unsigned long vertices_size =
-                (attrib.vertices.size() != 0 ? shape.mesh.indices.size() * VERTICES_NUM_COMPONENTS : 0)
-                + (attrib.normals.size() != 0 ? shape.mesh.indices.size() * NORMALS_NUM_COMPONENTS : 0)
-                + (attrib.texcoords.size() != 0 ? shape.mesh.indices.size() * TEX_COORDS_NUM_COMPONENTS : 0);
+                (!attrib.vertices.empty() ? shape.mesh.indices.size() * VERTICES_NUM_COMPONENTS : 0)
+                + (!attrib.normals.empty() ? shape.mesh.indices.size() * NORMALS_NUM_COMPONENTS : 0)
+                + (!attrib.texcoords.empty() ? shape.mesh.indices.size() * TEX_COORDS_NUM_COMPONENTS : 0);
         jfloatArray vertices_array = env->NewFloatArray((jsize) vertices_size);
         jboolean is_copy_vertices;
         jfloat *body_vertices = env->GetFloatArrayElements(vertices_array, &is_copy_vertices);
@@ -353,14 +354,14 @@ void GenerateShapeModels(JNIEnv * env,
                     body_vertices[vertices_count] = vertex;
                     vertices_count++;
                 }
-                if (attrib.normals.size() != 0) {
+                if (!attrib.normals.empty()) {
                     for (size_t nn = 0; nn < NORMALS_NUM_COMPONENTS; nn++) {
                         tinyobj::real_t normal = attrib.normals[NORMALS_NUM_COMPONENTS * idx.normal_index + nn];
                         body_vertices[vertices_count] = normal;
                         vertices_count++;
                     }
                 }
-                if (attrib.texcoords.size() != 0) {
+                if (!attrib.texcoords.empty()) {
                     for (size_t tcn = 0; tcn < TEX_COORDS_NUM_COMPONENTS; tcn++) {
                         tinyobj::real_t tex_coord = attrib.texcoords[TEX_COORDS_NUM_COMPONENTS * idx.texcoord_index + tcn];
                         body_vertices[vertices_count] = flip_texcoords ? 1 - tex_coord : tex_coord;
@@ -395,7 +396,7 @@ void GenerateShapeModels(JNIEnv * env,
 
 void SetMaterialAmbientField(JNIEnv * env,
                              jobject &j_material_model,
-                             const tinyobj::material_t material) {
+                             const tinyobj::material_t &material) {
     jfloatArray j_ambient_array = env->NewFloatArray((jsize) sizeof(material.ambient) / sizeof(material.ambient[0]));
     jboolean is_copy_ambient;
     jfloat *body_ambient = env->GetFloatArrayElements(j_ambient_array, &is_copy_ambient);
@@ -408,7 +409,7 @@ void SetMaterialAmbientField(JNIEnv * env,
 
 void SetMaterialDiffuseField(JNIEnv * env,
                              jobject &j_material_model,
-                             const tinyobj::material_t material) {
+                             const tinyobj::material_t &material) {
     jfloatArray j_diffuse_array = env->NewFloatArray((jsize) sizeof(material.diffuse) / sizeof(material.diffuse[0]));
     jboolean is_copy_diffuse;
     jfloat *body_diffuse = env->GetFloatArrayElements(j_diffuse_array, &is_copy_diffuse);
@@ -421,7 +422,7 @@ void SetMaterialDiffuseField(JNIEnv * env,
 
 void SetMaterialSpecularField(JNIEnv * env,
                               jobject &j_material_model,
-                              const tinyobj::material_t material) {
+                              const tinyobj::material_t &material) {
     jfloatArray j_specular_array = env->NewFloatArray((jsize) sizeof(material.specular) / sizeof(material.specular[0]));
     jboolean is_copy_specular;
     jfloat *body_specular = env->GetFloatArrayElements(j_specular_array, &is_copy_specular);
@@ -434,7 +435,7 @@ void SetMaterialSpecularField(JNIEnv * env,
 
 void SetMaterialTransmittanceField(JNIEnv * env,
                                    jobject &j_material_model,
-                                   const tinyobj::material_t material) {
+                                   const tinyobj::material_t &material) {
     jfloatArray j_transmittance_array = env->NewFloatArray((jsize) sizeof(material.transmittance) / sizeof(material.transmittance[0]));
     jboolean is_copy_transmittance;
     jfloat *body_transmittance = env->GetFloatArrayElements(j_transmittance_array, &is_copy_transmittance);
@@ -447,7 +448,7 @@ void SetMaterialTransmittanceField(JNIEnv * env,
 
 void SetMaterialEmissionField(JNIEnv * env,
                               jobject &j_material_model,
-                              const tinyobj::material_t material) {
+                              const tinyobj::material_t &material) {
     jfloatArray j_emission_array = env->NewFloatArray((jsize) sizeof(material.emission) / sizeof(material.emission[0]));
     jboolean is_copy_emission;
     jfloat *body_emission = env->GetFloatArrayElements(j_emission_array, &is_copy_emission);
@@ -460,87 +461,87 @@ void SetMaterialEmissionField(JNIEnv * env,
 
 void SetMaterialShininessField(JNIEnv * env,
                                jobject &j_material_model,
-                               const tinyobj::material_t material) {
+                               const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_shininess_field_id, material.shininess);
 }
 
 void SetMaterialIorField(JNIEnv * env,
                          jobject &j_material_model,
-                         const tinyobj::material_t material) {
+                         const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_ior_field_id, material.ior);
 }
 
 void SetMaterialDissolveField(JNIEnv * env,
                               jobject &j_material_model,
-                              const tinyobj::material_t material) {
+                              const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_dissolve_field_id, material.dissolve);
 }
 
 void SetMaterialIllumField(JNIEnv * env,
                            jobject &j_material_model,
-                           const tinyobj::material_t material) {
+                           const tinyobj::material_t &material) {
     env->SetIntField(j_material_model, material_model_jni->j_illum_field_id, material.illum);
 }
 
 void SetMaterialDummyField(JNIEnv * env,
                            jobject &j_material_model,
-                           const tinyobj::material_t material) {
+                           const tinyobj::material_t &material) {
     env->SetIntField(j_material_model, material_model_jni->j_dummy_field_id, material.dummy);
 }
 
 void SetMaterialAmbientTexnameField(JNIEnv * env,
                                     jobject &j_material_model,
-                                    const tinyobj::material_t material) {
+                                    const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_ambient_texname_field_id, env->NewStringUTF(material.ambient_texname.c_str()));
 }
 
 void SetMaterialDiffuseTexnameField(JNIEnv * env,
                                     jobject &j_material_model,
-                                    const tinyobj::material_t material) {
+                                    const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_diffuse_texname_field_id, env->NewStringUTF(material.diffuse_texname.c_str()));
 }
 
 void SetMaterialSpecularTexnameField(JNIEnv * env,
                                      jobject &j_material_model,
-                                     const tinyobj::material_t material) {
+                                     const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_specular_texname_field_id, env->NewStringUTF(material.specular_texname.c_str()));
 }
 
 void SetMaterialSpecularHighlightTexnameField(JNIEnv * env,
                                               jobject &j_material_model,
-                                              const tinyobj::material_t material) {
+                                              const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_specular_highlight_texname_field_id, env->NewStringUTF(material.specular_highlight_texname.c_str()));
 }
 
 void SetMaterialBumpTexnameField(JNIEnv * env,
                                  jobject &j_material_model,
-                                 const tinyobj::material_t material) {
+                                 const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_bump_texname_field_id, env->NewStringUTF(material.bump_texname.c_str()));
 }
 
 void SetMaterialDisplacementTexnameField(JNIEnv * env,
                                          jobject &j_material_model,
-                                         const tinyobj::material_t material) {
+                                         const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_displacement_texname_field_id, env->NewStringUTF(material.displacement_texname.c_str()));
 }
 
 void SetMaterialAlphaTexnameField(JNIEnv * env,
                                   jobject &j_material_model,
-                                  const tinyobj::material_t material) {
+                                  const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_alpha_texname_field_id, env->NewStringUTF(material.alpha_texname.c_str()));
 }
 
 void SetMaterialReflectionTexnameField(JNIEnv * env,
                                        jobject &j_material_model,
-                                       const tinyobj::material_t material) {
+                                       const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_reflection_texname_field_id, env->NewStringUTF(material.reflection_texname.c_str()));
 }
 
 void SetMaterialAmbientTexoptField(JNIEnv * env,
                                    jobject &j_material_model,
-                                   const tinyobj::material_t material) {
+                                   const tinyobj::material_t &material) {
     jobject j_ambient_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_ambient_texture_type = NULL;
+    jobject j_ambient_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_ambient_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -618,9 +619,9 @@ void SetMaterialAmbientTexoptField(JNIEnv * env,
 
 void SetMaterialDiffuseTexoptField(JNIEnv * env,
                                    jobject &j_material_model,
-                                   const tinyobj::material_t material) {
+                                   const tinyobj::material_t &material) {
     jobject j_diffuse_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_diffuse_texture_type = NULL;
+    jobject j_diffuse_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_diffuse_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -698,9 +699,9 @@ void SetMaterialDiffuseTexoptField(JNIEnv * env,
 
 void SetMaterialSpecularTexoptField(JNIEnv * env,
                                     jobject &j_material_model,
-                                    const tinyobj::material_t material) {
+                                    const tinyobj::material_t &material) {
     jobject j_specular_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_specular_texture_type = NULL;
+    jobject j_specular_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_specular_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -778,9 +779,9 @@ void SetMaterialSpecularTexoptField(JNIEnv * env,
 
 void SetMaterialSpecularHighlightTexoptField(JNIEnv * env,
                                              jobject &j_material_model,
-                                             const tinyobj::material_t material) {
+                                             const tinyobj::material_t &material) {
     jobject j_specular_highlight_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_specular_highlight_texture_type = NULL;
+    jobject j_specular_highlight_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_specular_highlight_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -858,9 +859,9 @@ void SetMaterialSpecularHighlightTexoptField(JNIEnv * env,
 
 void SetMaterialBumpTexoptField(JNIEnv * env,
                                 jobject &j_material_model,
-                                const tinyobj::material_t material) {
+                                const tinyobj::material_t &material) {
     jobject j_bump_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_bump_texture_type = NULL;
+    jobject j_bump_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_bump_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -938,9 +939,9 @@ void SetMaterialBumpTexoptField(JNIEnv * env,
 
 void SetMaterialDisplacementTexoptField(JNIEnv * env,
                                         jobject &j_material_model,
-                                        const tinyobj::material_t material) {
+                                        const tinyobj::material_t &material) {
     jobject j_displacement_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_displacement_texture_type = NULL;
+    jobject j_displacement_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_displacement_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -1018,9 +1019,9 @@ void SetMaterialDisplacementTexoptField(JNIEnv * env,
 
 void SetMaterialAlphaTexoptField(JNIEnv * env,
                                  jobject &j_material_model,
-                                 const tinyobj::material_t material) {
+                                 const tinyobj::material_t &material) {
     jobject j_alpha_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_alpha_texture_type = NULL;
+    jobject j_alpha_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_alpha_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -1098,9 +1099,9 @@ void SetMaterialAlphaTexoptField(JNIEnv * env,
 
 void SetMaterialReflectionTexoptField(JNIEnv * env,
                                       jobject &j_material_model,
-                                      const tinyobj::material_t material) {
+                                      const tinyobj::material_t &material) {
     jobject j_reflection_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_reflection_texture_type = NULL;
+    jobject j_reflection_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_reflection_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -1178,87 +1179,87 @@ void SetMaterialReflectionTexoptField(JNIEnv * env,
 
 void SetMaterialRoughnessField(JNIEnv * env,
                                jobject &j_material_model,
-                               const tinyobj::material_t material) {
+                               const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_roughness_field_id, material.roughness);
 }
 
 void SetMaterialMetallicField(JNIEnv * env,
                               jobject &j_material_model,
-                              const tinyobj::material_t material) {
+                              const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_metallic_field_id, material.metallic);
 }
 
 void SetMaterialSheenField(JNIEnv * env,
                            jobject &j_material_model,
-                           const tinyobj::material_t material) {
+                           const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_sheen_field_id, material.sheen);
 }
 
 void SetMaterialClearcoatThicknessField(JNIEnv * env,
                                         jobject &j_material_model,
-                                        const tinyobj::material_t material) {
+                                        const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_clearcoat_thickness_field_id, material.clearcoat_thickness);
 }
 
 void SetMaterialClearcoatRoughnessField(JNIEnv * env,
                                         jobject &j_material_model,
-                                        const tinyobj::material_t material) {
+                                        const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_clearcoat_roughness_field_id, material.clearcoat_roughness);
 }
 
 void SetMaterialAnisotrophyField(JNIEnv * env,
                                  jobject &j_material_model,
-                                 const tinyobj::material_t material) {
+                                 const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_anisotropy_field_id, material.anisotropy);
 }
 
 void SetMaterialAnisotrophyRotationField(JNIEnv * env,
                                          jobject &j_material_model,
-                                         const tinyobj::material_t material) {
+                                         const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_anisotropy_rotation_field_id, material.anisotropy_rotation);
 }
 
 void SetMaterialPad0Field(JNIEnv * env,
                           jobject &j_material_model,
-                          const tinyobj::material_t material) {
+                          const tinyobj::material_t &material) {
     env->SetFloatField(j_material_model, material_model_jni->j_pad0_field_id, material.pad0);
 }
 
 void SetMaterialRoughnessTexnameField(JNIEnv * env,
                                      jobject &j_material_model,
-                                     const tinyobj::material_t material) {
+                                     const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_roughness_texname_field_id, env->NewStringUTF(material.roughness_texname.c_str()));
 }
 
 void SetMaterialMetallicTexnameField(JNIEnv * env,
                                      jobject &j_material_model,
-                                     const tinyobj::material_t material) {
+                                     const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_metallic_texname_field_id, env->NewStringUTF(material.metallic_texname.c_str()));
 }
 
 void SetMaterialSheenTexnameField(JNIEnv * env,
                                   jobject &j_material_model,
-                                  const tinyobj::material_t material) {
+                                  const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_sheen_texname_field_id, env->NewStringUTF(material.sheen_texname.c_str()));
 }
 
 void SetMaterialEmissiveTexnameField(JNIEnv * env,
                                      jobject &j_material_model,
-                                     const tinyobj::material_t material) {
+                                     const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_emissive_texname_field_id, env->NewStringUTF(material.emissive_texname.c_str()));
 }
 
 void SetMaterialNormalTexnameField(JNIEnv * env,
                                    jobject &j_material_model,
-                                   const tinyobj::material_t material) {
+                                   const tinyobj::material_t &material) {
     env->SetObjectField(j_material_model, material_model_jni->j_normal_texname_field_id, env->NewStringUTF(material.normal_texname.c_str()));
 }
 
 void SetMaterialRoughnessTexoptField(JNIEnv * env,
                                      jobject &j_material_model,
-                                     const tinyobj::material_t material) {
+                                     const tinyobj::material_t &material) {
     jobject j_roughness_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_roughness_texture_type = NULL;
+    jobject j_roughness_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_roughness_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -1336,9 +1337,9 @@ void SetMaterialRoughnessTexoptField(JNIEnv * env,
 
 void SetMaterialMetallicTexoptField(JNIEnv * env,
                                     jobject &j_material_model,
-                                    const tinyobj::material_t material) {
+                                    const tinyobj::material_t &material) {
     jobject j_metallic_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_metallic_texture_type = NULL;
+    jobject j_metallic_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_metallic_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -1416,9 +1417,9 @@ void SetMaterialMetallicTexoptField(JNIEnv * env,
 
 void SetMaterialSheenTexoptField(JNIEnv * env,
                                  jobject &j_material_model,
-                                 const tinyobj::material_t material) {
+                                 const tinyobj::material_t &material) {
     jobject j_sheen_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_sheen_texture_type = NULL;
+    jobject j_sheen_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_sheen_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -1496,9 +1497,9 @@ void SetMaterialSheenTexoptField(JNIEnv * env,
 
 void SetMaterialEmissiveTexoptField(JNIEnv * env,
                                     jobject &j_material_model,
-                                    const tinyobj::material_t material) {
+                                    const tinyobj::material_t &material) {
     jobject j_emissive_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_emissive_texture_type = NULL;
+    jobject j_emissive_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_emissive_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -1576,9 +1577,9 @@ void SetMaterialEmissiveTexoptField(JNIEnv * env,
 
 void SetMaterialNormalTexoptField(JNIEnv * env,
                                   jobject &j_material_model,
-                                  const tinyobj::material_t material) {
+                                  const tinyobj::material_t &material) {
     jobject j_normal_texopt_model = env->NewObject(texture_option_model_jni->j_texture_option_model_class, texture_option_model_jni->j_texture_option_model_constructor);
-    jobject j_normal_texture_type = NULL;
+    jobject j_normal_texture_type = nullptr;
     switch (material.ambient_texopt.type) {
         case tinyobj::texture_type_t::TEXTURE_TYPE_NONE:
             j_normal_texture_type = env->GetStaticObjectField(texture_type_jni->j_texture_type_class, texture_type_jni->j_texture_type_none_field_id);
@@ -1656,15 +1657,15 @@ void SetMaterialNormalTexoptField(JNIEnv * env,
 
 void SetMaterialPad2Field(JNIEnv * env,
                           jobject &j_material_model,
-                          const tinyobj::material_t material) {
+                          const tinyobj::material_t &material) {
     env->SetIntField(j_material_model, material_model_jni->j_pad2_field_id, material.pad2);
 }
 
 void SetMaterialUnknownParameterField(JNIEnv * env,
                                       jobject &j_material_model,
-                                      const tinyobj::material_t material) {
+                                      const tinyobj::material_t &material) {
     jobject j_unknown_parameter = env->NewObject(hash_map_jni->j_hash_map_class, hash_map_jni->j_hash_map_constructor, material.unknown_parameter.size());
-    for (auto it : material.unknown_parameter) {
+    for (const auto &it : material.unknown_parameter) {
         env->CallObjectMethod(j_unknown_parameter, hash_map_jni->j_hash_map_put, env->NewStringUTF(it.first.c_str()), env->NewStringUTF(it.second.c_str()));
     }
     env->SetObjectField(j_material_model, material_model_jni->j_unknown_parameter_field_id, j_unknown_parameter);
@@ -1672,8 +1673,8 @@ void SetMaterialUnknownParameterField(JNIEnv * env,
 
 void GenerateMaterialModels(JNIEnv * env,
                             jobject &j_result_model,
-                            const std::vector<tinyobj::material_t> materials) {
-    jobjectArray material_models = env->NewObjectArray((jsize) materials.size(), material_model_jni->j_material_model_class, NULL);
+                            const std::vector<tinyobj::material_t> &materials) {
+    jobjectArray material_models = env->NewObjectArray((jsize) materials.size(), material_model_jni->j_material_model_class, nullptr);
     for (size_t m = 0; m < materials.size(); m++) {
         jobject j_material_model = env->NewObject(material_model_jni->j_material_model_class, material_model_jni->j_material_model_constructor);
         tinyobj::material_t material = materials[m];
@@ -1736,13 +1737,13 @@ void GenerateAttributes(JNIEnv * env,
                         jobject &j_result_model,
                         const tinyobj::attrib_t &attrib) {
     // vertices size field
-    env->SetLongField(j_result_model, result_model_jni->j_vertices_size_field_id, attrib.vertices.size());
+    env->SetLongField(j_result_model, result_model_jni->j_vertices_size_field_id, attrib.vertices.size() / VERTICES_NUM_COMPONENTS);
     // normals size field
-    env->SetLongField(j_result_model, result_model_jni->j_normals_size_field_id, attrib.normals.size());
+    env->SetLongField(j_result_model, result_model_jni->j_normals_size_field_id, attrib.normals.size() / NORMALS_NUM_COMPONENTS);
     // texcoords size field
-    env->SetLongField(j_result_model, result_model_jni->j_texcoords_size_field_id, attrib.texcoords.size());
+    env->SetLongField(j_result_model, result_model_jni->j_texcoords_size_field_id, attrib.texcoords.size() / TEX_COORDS_NUM_COMPONENTS);
     // colors size field
-    env->SetLongField(j_result_model, result_model_jni->j_colors_size_field_id, attrib.colors.size());
+    env->SetLongField(j_result_model, result_model_jni->j_colors_size_field_id, attrib.colors.size() / COLORS_NUM_COMPONENTS);
 }
 
 void GenerateMessages(JNIEnv * env,
@@ -1805,8 +1806,8 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_nativeLoad(JNIEnv *env,
     log("texcoords size -> %lu", attrib.texcoords.size());
     log("colors size -> %lu", attrib.colors.size());
     unsigned long indicesSize = 0;
-    for (size_t i = 0; i < shapes.size(); i++) {
-        indicesSize += shapes[i].mesh.indices.size();
+    for (auto &shape : shapes) {
+        indicesSize += shape.mesh.indices.size();
     }
     log("indices size -> %lu", indicesSize);
 
