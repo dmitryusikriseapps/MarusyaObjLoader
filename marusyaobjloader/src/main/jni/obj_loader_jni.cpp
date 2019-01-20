@@ -318,6 +318,7 @@ void GenerateShapeModels(JNIEnv * env,
                          jobject &j_result_model,
                          const tinyobj::attrib_t &attrib,
                          const std::vector<tinyobj::shape_t> &shapes,
+                         const jfloat normalize_coefficient,
                          const jboolean flip_texcoords) {
     jobjectArray shape_models = env->NewObjectArray((jsize) shapes.size(), shape_model_jni->j_shape_model_class, nullptr);
     for (size_t s = 0; s < shapes.size(); s++) {
@@ -348,7 +349,7 @@ void GenerateShapeModels(JNIEnv * env,
 
                 for (size_t vn = 0; vn < VERTICES_NUM_COMPONENTS; vn++) {
                     tinyobj::real_t vertex = attrib.vertices[VERTICES_NUM_COMPONENTS * idx.vertex_index + vn];
-                    body_vertices[vertices_count] = vertex;
+                    body_vertices[vertices_count] = vertex / normalize_coefficient;
                     vertices_count++;
                 }
                 if (!attrib.normals.empty()) {
@@ -1759,6 +1760,7 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_nativeLoad(JNIEnv *env,
                                                              jobject instance,
                                                              jstring obj_path,
                                                              jstring mtl_path,
+                                                             jfloat normalize_coefficient,
                                                              jboolean flip_texcoord) {
     log("***********************************************************************************", NULL);
     std::chrono::time_point<std::chrono::high_resolution_clock> t_start, t_end;
@@ -1803,7 +1805,7 @@ Java_com_riseapps_marusyaobjloader_MarusyaObjLoaderImpl_nativeLoad(JNIEnv *env,
 
     // generate result model
     jobject j_result_model = env->NewObject(result_model_jni->j_result_model_class, result_model_jni->j_result_model_constructor);
-    GenerateShapeModels(env, j_result_model, attrib, shapes, flip_texcoord);
+    GenerateShapeModels(env, j_result_model, attrib, shapes, normalize_coefficient, flip_texcoord);
     GenerateMaterialModels(env, j_result_model, materials);
     GenerateMessages(env, j_result_model, warn, err);
     ReleaseJNIDetails();

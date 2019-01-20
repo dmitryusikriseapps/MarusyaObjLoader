@@ -11,18 +11,55 @@ public class MarusyaObjLoaderImpl implements MarusyaObjLoader {
     }
 
     @Override
-    public ResultModel load(File objPath, File mtlPath, boolean flipTextureCoordinates) throws FileNotFoundException {
-        if (objPath == null) {
+    public ResultModel load(File obj, boolean flipTextureCoordinates) throws FileNotFoundException {
+        if (obj == null) {
             throw new FileNotFoundException("The obj file is null");
-        } else if (mtlPath == null) {
-            throw new FileNotFoundException("The mtl file is null");
-        } else if (!objPath.exists()) {
-            throw new FileNotFoundException(String.format("%s not found", objPath.getAbsolutePath()));
-        } else if (!mtlPath.exists()) {
-            throw new FileNotFoundException(String.format("%s not found", mtlPath.getAbsolutePath()));
+        } else if (!obj.exists()) {
+            throw new FileNotFoundException(String.format("%s not found", obj.getAbsolutePath()));
         }
 
-        return nativeLoad(objPath.getAbsolutePath(), mtlPath.getAbsolutePath(), flipTextureCoordinates);
+        return nativeLoad(obj.getAbsolutePath(), "", 1.0f, flipTextureCoordinates);
+    }
+
+    @Override
+    public ResultModel load(File obj, File mtl, boolean flipTextureCoordinates) throws FileNotFoundException {
+        if (obj == null) {
+            throw new FileNotFoundException("The obj file is null");
+        } else if (mtl == null) {
+            throw new FileNotFoundException("The mtl file is null");
+        } else if (!obj.exists()) {
+            throw new FileNotFoundException(String.format("%s not found", obj.getAbsolutePath()));
+        } else if (!mtl.exists()) {
+            throw new FileNotFoundException(String.format("%s not found", mtl.getAbsolutePath()));
+        }
+
+        return nativeLoad(obj.getAbsolutePath(), mtl.getAbsolutePath(), 1.0f, flipTextureCoordinates);
+    }
+
+    @Override
+    public ResultModel load(File obj, float normalizeCoefficient, boolean flipTextureCoordinates) throws FileNotFoundException {
+        if (obj == null) {
+            throw new FileNotFoundException("The obj file is null");
+        }  else if (!obj.exists()) {
+            throw new FileNotFoundException(String.format("%s not found", obj.getAbsolutePath()));
+        }
+
+        return nativeLoad(obj.getAbsolutePath(), "", normalizeCoefficient, flipTextureCoordinates);
+    }
+
+    @Override
+    public ResultModel load(File obj, File mtl, float normalizeCoefficient, boolean flipTextureCoordinates) throws FileNotFoundException {
+        if (obj == null) {
+            throw new FileNotFoundException("The obj file is null");
+        } else if (mtl == null) {
+            throw new FileNotFoundException("The mtl file is null");
+        } else if (!obj.exists()) {
+            throw new FileNotFoundException(String.format("%s not found", obj.getAbsolutePath()));
+        } else if (!mtl.exists()) {
+            throw new FileNotFoundException(String.format("%s not found", mtl.getAbsolutePath()));
+        }
+
+        return nativeLoad(obj.getAbsolutePath(), mtl.getAbsolutePath(), normalizeCoefficient, flipTextureCoordinates);
     }
 
     @Override
@@ -35,7 +72,10 @@ public class MarusyaObjLoaderImpl implements MarusyaObjLoader {
         nativeDisableLog();
     }
 
-    private native ResultModel nativeLoad(String objPath, String mtlPath, boolean flipTextureCoordinates);
+    private native ResultModel nativeLoad(String objPath,
+                                          String mtlPath,
+                                          float normalizeCoefficient,
+                                          boolean flipTextureCoordinates);
 
     private native void nativeEnableLog();
 
