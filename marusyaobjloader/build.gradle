@@ -1,4 +1,19 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.novoda.bintray-release'
+
+publish {
+    def groupProjectID = 'com.riseapps.marusyaobjloader'
+    def artifactProjectID = 'marusyaobjloader'
+    def publishVersionID = '1.0.0'
+
+    userOrg = 'dmitryusik'
+    repoName = 'MarusyaObjLoader'
+    groupId = groupProjectID
+    artifactId = artifactProjectID
+    publishVersion = publishVersionID
+    desc = 'A library for optimizing the loading of 3-D models of the .OBJ format.'
+    website = 'https://github.com/DmitryUsik/MarusyaObjLoader'
+}
 
 android {
     compileSdkVersion 28
@@ -8,17 +23,18 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    externalNativeBuild {
+        cmake {
+            path "src/main/jni/CMakeLists.txt"
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    externalNativeBuild {
-        cmake {
-            path "src/main/jni/CMakeLists.txt"
-        }
-    }
+
 }
 
 dependencies {
