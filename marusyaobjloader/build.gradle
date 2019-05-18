@@ -6,12 +6,12 @@ publish {
     def artifactProjectID = 'marusyaobjloader'
     def publishVersionID = '1.0.0'
 
-    userOrg = 'dmitryusik'
+    userOrg = 'dmitryusikriseapps'
     repoName = 'MarusyaObjLoader'
     groupId = groupProjectID
     artifactId = artifactProjectID
     publishVersion = publishVersionID
-    desc = 'A library for optimizing the loading of 3-D models of the .OBJ format.'
+    desc = 'https://github.com/dmitryusikriseapps/MarusyaObjLoader'
     website = 'https://github.com/DmitryUsik/MarusyaObjLoader'
 }
 
