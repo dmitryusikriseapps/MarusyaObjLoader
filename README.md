@@ -36,13 +36,12 @@ End with an example of getting some data out of the system or using it for a lit
 
 Explain how to run the automated tests for this system
 
-### Break down into end to end tests
+### Results
 
-Explain what these tests test and why
-
-```
-Give an example
-```
+| Phone characteristics  | Second Header |
+| :--- | ------------- |
+| Google Pixel 2 | ![google pixel 2](https://github.com/dmitryusikriseapps/MarusyaObjLoader/blob/master/charts/google%20pixel%202.png |
+| Huawei HRY-LX1  | https://github.com/dmitryusikriseapps/MarusyaObjLoader/blob/master/charts/huawei%20hry-lx1.png |
 
 ### And coding style tests
 
