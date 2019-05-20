@@ -41,7 +41,7 @@ Explain how to run the automated tests for this system
 | Phone characteristics  | Second Header |
 | :--- | ------------- |
 | Google Pixel 2 | ![google pixel 2](https://github.com/dmitryusikriseapps/MarusyaObjLoader/blob/master/charts/google%20pixel%202.png |
-| Huawei HRY-LX1  | https://github.com/dmitryusikriseapps/MarusyaObjLoader/blob/master/charts/huawei%20hry-lx1.png |
+| Huawei HRY-LX1  | https://github.com/dmitryusikriseapps/MarusyaObjLoader/blob/master/charts/huawei%20hry-lx1.png?raw=true |
 
 ### And coding style tests
 
