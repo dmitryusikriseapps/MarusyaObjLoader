@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ObjLoaderJNI</string>
+    <string name="load_3d_model">Load 3D model</string>
 </resources>

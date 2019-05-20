@@ -11,8 +11,8 @@ publish {
     groupId = groupProjectID
     artifactId = artifactProjectID
     publishVersion = publishVersionID
-    desc = 'https://github.com/dmitryusikriseapps/MarusyaObjLoader'
-    website = 'https://github.com/DmitryUsik/MarusyaObjLoader'
+    desc = ''
+    website = 'https://github.com/dmitryusikriseapps/MarusyaObjLoader'
 }
 
 android {

@@ -3,17 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.riseapps.objloaderjni.MainActivity">
+    tools:context=".ResultActivity">
 
-    <android.support.v7.widget.AppCompatButton
-        android:id="@+id/am_load_3d_model"
+    <ProgressBar
+        android:id="@+id/ar_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:textSize="24sp"
-        android:padding="8dp"
-        android:textColor="@android:color/white"
-        android:background="@color/colorPrimary"
-        android:text="@string/load_3d_model"/>
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/ar_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/black" />
 
 </RelativeLayout>
