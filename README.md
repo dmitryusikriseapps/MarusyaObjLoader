@@ -45,7 +45,7 @@ Explain how to run the automated tests for this system
 | LGE Nexus 5X  | ![](charts/lge%20nexus%205x.png) |
 | Samsung SM-G930F  | ![](charts/samsung%20sm-g930f.png) |
 | Samsung SM-G950F  | ![](charts/samsung%20sm-n950f.png) |
-| Samsung SM-T820  | ![](chart/samsung%20sm-t820.png) |
+| Samsung SM-T820  | ![](charts/samsung%20sm-t820.png) |
 | Xiaomi Mi A1  | ![](charts/xiaomi%20mi%20a1.png) |
 | Xiaomi Redmi Note 5  | ![](charts/xioami%20redmi%20note%205.png) |
 
