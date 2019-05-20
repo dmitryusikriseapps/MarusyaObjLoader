@@ -1400,4 +1400,3 @@ intensities for a particular light.  The samples are variable, but the
 default is 3:
  
  S = samp1 + samp2 + samp3.
- 
