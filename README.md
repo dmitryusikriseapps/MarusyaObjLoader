@@ -12,12 +12,12 @@ These instructions will help you to install the package and use it.
 
 Using gradle:
 
-```
+```gradle
 implementation 'com.riseapps.marusyaobjloader:marusyaobjloader:1.0.0'
 ```
 
 Using maven:
-```
+```xml
 <dependency>
   <groupId>com.riseapps.marusyaobjloader</groupId>
   <artifactId>marusyaobjloader</artifactId>
@@ -28,10 +28,10 @@ Using maven:
 
 Or download it as a file [here](https://github.com/dmitryusikriseapps/MarusyaObjLoader/releases)
 
-### Using
+### Usage
 
-Use this code for the base functionality: 
-```
+Use this code for the minimum functionality: 
+```java
 import com.riseapps.marusyaobjloader.MarusyaObjLoader;
 import com.riseapps.marusyaobjloader.MarusyaObjLoaderImpl;
 import com.riseapps.marusyaobjloader.model.ResultModel;
@@ -62,6 +62,8 @@ public void load() {
 ## Example
 
 The full example of using is located [here](https://github.com/dmitryusikriseapps/MarusyaObjLoader/tree/master/app/src/main/java/com/riseapps/objloaderjni)
+
+## Documentation
 
 ## Performance
 
