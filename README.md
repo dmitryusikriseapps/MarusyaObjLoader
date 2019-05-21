@@ -52,7 +52,7 @@ public void load() {
       MTL,
       1.0f,
       true);
-    } catch (FileNotFoundException e) {
+  } catch (FileNotFoundException e) {
     e.printStackTrace();
     }
   }
