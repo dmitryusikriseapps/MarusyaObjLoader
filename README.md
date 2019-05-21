@@ -40,8 +40,10 @@ Explain how to run the automated tests for this system
 
 | Phone characteristics  | Chart |
 | :--- | :---: |
-| **Google Pixel 2** (Android 9, Qualcom Snapdragon 835 (4x2.35 ГГц + 4x1.9 ГГц),
-RAM 4 ГБ) | ![](charts/google%20pixel%202.png)|
+| **Google Pixel 2** 
+Android 9, 
+Qualcom Snapdragon 835 (4x2.35 ГГц + 4x1.9 ГГц),
+RAM 4 ГБ | ![](charts/google%20pixel%202.png)|
 | **Huawei HRY - LX1** (Android 9, HiSiliconKirin 710 (4x2.2 ГГц + 4x1.7 ГГц), RAM
 3 ГБ)  | ![](charts/huawei%20hry-lx1.png) |
 | **LGE Nexus 5X** (Android 8.1, Qualcom Snapdragon 808 (2x1.44 ГГц + 2x1.82 ГГц),
