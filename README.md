@@ -6,39 +6,63 @@ A small library for Wavefront .obj and .mtl files loading. As .obj parser was us
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
-### Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
+These instructions will help you to install the package and use it.
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
+Using gradle:
 
 ```
-Give the example
+implementation 'com.riseapps.marusyaobjloader:marusyaobjloader:1.0.0'
 ```
 
-And repeat
-
+Using maven:
 ```
-until finished
+<dependency>
+  <groupId>com.riseapps.marusyaobjloader</groupId>
+  <artifactId>marusyaobjloader</artifactId>
+  <version>1.0.0</version>
+  <type>pom</type>
+</dependency>
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+### Using
 
-## Running the tests
+Use this code for the base functionality: 
+```
+import com.riseapps.marusyaobjloader.MarusyaObjLoader;
+import com.riseapps.marusyaobjloader.MarusyaObjLoaderImpl;
+import com.riseapps.marusyaobjloader.model.ResultModel;
 
-Explain how to run the automated tests for this system
+import java.io.File;
+import java.io.FileNotFoundException;
 
-### Performance
+private static final File FILES_PATH = new File(Environment.getExternalStorageDirectory(), "jni_test");
+private static final File OBJ = new File(FILES_PATH, "luxury_house_interior.obj");
+private static final File MTL = new File(FILES_PATH, "luxury_house_interior.mtl");
+
+public void load() {
+  final MarusyaObjLoader marusyaObjLoader = new MarusyaObjLoaderImpl();
+  ResultModel resultModel = null;
+  try {
+    resultModel = marusyaObjLoader.load(
+      OBJ,
+      MTL,
+      1.0f,
+      true);
+    } catch (FileNotFoundException e) {
+    e.printStackTrace();
+    }
+  }
+}
+```
+
+## Example
+
+The full example of using is located [here]{https://github.com/dmitryusikriseapps/MarusyaObjLoader/tree/master/app/src/main/java/com/riseapps/objloaderjni}
+
+## Performance
+
 For the performance tests were read 50 3-D models of .obj format. It was done using pure Java and JNI. For pure Java was used this cool library [https://github.com/javagl/Obj](https://github.com/javagl/Obj). The table below shows gain in speed for devices with different power when reading 3-D models of .obj format using pure Java and JNI.
 
 | Device  | File size versus read time |
@@ -52,44 +76,6 @@ For the performance tests were read 50 3-D models of .obj format. It was done us
 | **Xiaomi Mi A1** Qualcomm Snapdragon 625 (4x2.0 GGz), RAM 4 GB) | ![](charts/xiaomi%20mi%20a1.png) |
 | **Xiaomi Redmi Note 5** Qualcom Snapdragon 636 (8x1.8 GGz), RAM 3 GB) | ![](charts/xioami%20redmi%20note%205.png) |
 
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+This project is licensed under the Apache 2.0 License - see the [LICENSE.md](LICENSE.md) file for details
