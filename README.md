@@ -40,14 +40,21 @@ Explain how to run the automated tests for this system
 
 | Phone characteristics  | Chart |
 | :--- | :---: |
-| Google Pixel 2 | ![](charts/google%20pixel%202.png)|
-| Huawei HRY-LX1  | ![](charts/huawei%20hry-lx1.png) |
-| LGE Nexus 5X  | ![](charts/lge%20nexus%205x.png) |
-| Samsung SM-G930F  | ![](charts/samsung%20sm-g930f.png) |
-| Samsung SM-G950F  | ![](charts/samsung%20sm-n950f.png) |
-| Samsung SM-T820  | ![](charts/samsung%20sm-t820.png) |
-| Xiaomi Mi A1  | ![](charts/xiaomi%20mi%20a1.png) |
-| Xiaomi Redmi Note 5  | ![](charts/xioami%20redmi%20note%205.png) |
+| **Google Pixel 2** (Android 9, Qualcom Snapdragon 835 (4x2.35 ГГц + 4x1.9 ГГц),
+RAM 4 ГБ) | ![](charts/google%20pixel%202.png)|
+| **Huawei HRY - LX1** (Android 9, HiSiliconKirin 710 (4x2.2 ГГц + 4x1.7 ГГц), RAM
+3 ГБ)  | ![](charts/huawei%20hry-lx1.png) |
+| **LGE Nexus 5X** (Android 8.1, Qualcom Snapdragon 808 (2x1.44 ГГц + 2x1.82 ГГц),
+RAM 2 ГБ)  | ![](charts/lge%20nexus%205x.png) |
+| **Samsung SM - G930F** (Android 8.1, Samsung Exynos 9 Octa 8890 (8x2.3 ГГц),
+RAM 4 ГБ)  | ![](charts/samsung%20sm-g930f.png) |
+| **Samsung SM - N950F** (Android 8.1, Samsung Exynos 9 Octa 8895 (4x2.3 ГГц +
+4x1.7 ГГц), RAM 6 ГБ)  | ![](charts/samsung%20sm-n950f.png) |
+| **Samsung SM - T820** (Android 8.1, Qualcomm Snapdragon 820 (2x2.15 ГГц + 2x1.6
+ГГц), RAM 4 ГБ)  | ![](charts/samsung%20sm-t820.png) |
+| **Xiaomi Mi A1** (Android 8.1, Qualcomm Snapdragon 625 (4x2.0 ГГц), RAM 4 ГБ)  | ![](charts/xiaomi%20mi%20a1.png) |
+| **Xiaomi Redmi Note 5** (Android 8.1, Qualcom Snapdragon 636 (8x1.8 ГГц), RAM 3
+ГБ)  | ![](charts/xioami%20redmi%20note%205.png) |
 
 ### And coding style tests
 
