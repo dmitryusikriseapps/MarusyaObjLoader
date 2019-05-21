@@ -109,7 +109,7 @@ ResultModel load(File obj, float normalizeCoefficient, boolean flipTextureCoordi
 
 obj - .obj file in a storage
 
-normalizeCoefficient - allows normalize vertices
+normalizeCoefficient - allows normalizing vertices
 
 flipTextureCoordinates - reverse a texture or not
 
@@ -129,7 +129,7 @@ obj - .obj file in a storage
 
 mtl - .mtl file in a storage
 
-normalizeCoefficient - allows normalize vertices
+normalizeCoefficient - allows normalizing vertices
 
 flipTextureCoordinates - reverse a texture or not
 
