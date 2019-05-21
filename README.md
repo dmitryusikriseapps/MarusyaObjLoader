@@ -36,9 +36,10 @@ End with an example of getting some data out of the system or using it for a lit
 
 Explain how to run the automated tests for this system
 
-### Results
+### Performance
+For the performance tests were read 50 3-D models of .obj format. It was done using pure Java and JNI. For pure Java was used this cool library [https://github.com/javagl/Obj](https://github.com/javagl/Obj). The table below shows gain in speed for devices with different power when reading 3-D models of .obj format using pure Java and JNI.
 
-| Phone characteristics  | Chart |
+| Device  | File size versus read time |
 | :--- | :---: |
 | **Google Pixel 2**  Qualcom Snapdragon 835 (4x2.35 GGz + 4x1.9 GGz), RAM 4 GB | ![](charts/google%20pixel%202.png)|
 | **Huawei HRY - LX1** HiSiliconKirin 710 (4x2.2 GGz + 4x1.7 GGz), RAM 3 GB) | ![](charts/huawei%20hry-lx1.png) |
