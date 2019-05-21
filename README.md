@@ -59,7 +59,7 @@ public void load() {
 
 ## Example
 
-The full example of using is located [here]{https://github.com/dmitryusikriseapps/MarusyaObjLoader/tree/master/app/src/main/java/com/riseapps/objloaderjni}
+The full example of using is located [here](https://github.com/dmitryusikriseapps/MarusyaObjLoader/tree/master/app/src/main/java/com/riseapps/objloaderjni)
 
 ## Performance
 
@@ -78,4 +78,4 @@ For the performance tests were read 50 3-D models of .obj format. It was done us
 
 ## License
 
-This project is licensed under the Apache 2.0 License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
