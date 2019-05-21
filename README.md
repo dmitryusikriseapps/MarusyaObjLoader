@@ -26,6 +26,8 @@ Using maven:
 </dependency>
 ```
 
+Or download it as a file [here](https://github.com/dmitryusikriseapps/MarusyaObjLoader/releases)
+
 ### Using
 
 Use this code for the base functionality: 
