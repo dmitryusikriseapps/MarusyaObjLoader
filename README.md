@@ -1,6 +1,6 @@
-# Project Title
+# MarusyaObjLoader
 
-One Paragraph of project description goes here
+A small library for Wavefront .obj and .mtl files loading. As .obj parser was used this fantastic library [https://github.com/syoyo/tinyobjloader](https://github.com/syoyo/tinyobjloader) 
 
 ## Getting Started
 
