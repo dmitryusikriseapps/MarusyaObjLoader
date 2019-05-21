@@ -65,6 +65,90 @@ The full example of using is located [here](https://github.com/dmitryusikriseapp
 
 ## Documentation
 
+### Method
+
+```java
+ResultModel load(File obj, boolean flipTextureCoordinates) throws FileNotFoundException;
+```
+
+#### Arguments
+
+obj - .obj file in a storage
+
+flipTextureCoordinates - reverse a texture or not
+
+#### Return
+
+ResultModel - an object which contains shapes, materials, error and warning messages
+
+### Method
+
+```java
+ResultModel load(File obj, File mtl, boolean flipTextureCoordinates) throws FileNotFoundException;
+```
+
+#### Arguments
+
+obj - .obj file in a storage
+
+mtl - .mtl file in a storage
+
+flipTextureCoordinates - reverse a texture or not
+
+#### Return
+
+ResultModel - an object which contains shapes, materials, error and warning messages
+
+### Method
+
+```java
+ResultModel load(File obj, float normalizeCoefficient, boolean flipTextureCoordinates) throws FileNotFoundException;
+```
+
+#### Arguments
+
+obj - .obj file in a storage
+
+normalizeCoefficient - allows normalize vertices
+
+flipTextureCoordinates - reverse a texture or not
+
+#### Return
+
+ResultModel - an object which contains shapes, materials, error and warning messages
+
+### Method
+
+```java
+ResultModel load(File obj, File mtl, float normalizeCoefficient, boolean flipTextureCoordinates) throws FileNotFoundException;
+```
+
+#### Arguments
+
+obj - .obj file in a storage
+
+mtl - .mtl file in a storage
+
+normalizeCoefficient - allows normalize vertices
+
+flipTextureCoordinates - reverse a texture or not
+
+#### Return
+
+ResultModel - an object which contains shapes, materials, error and warning messages
+
+### Method
+
+```java
+void enableLog();
+```
+
+### Method
+
+```java
+void disableLog();
+```
+
 ## Performance
 
 For the performance tests were read 50 3-D models of .obj format. It was done using pure Java and JNI. For pure Java was used this cool library [https://github.com/javagl/Obj](https://github.com/javagl/Obj). The table below shows gain in speed for devices with different power when reading 3-D models of .obj format using pure Java and JNI.
