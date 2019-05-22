@@ -164,6 +164,8 @@ For the performance tests were read 50 3-D models of .obj format. It was done us
 | **Xiaomi Mi A1** Qualcomm Snapdragon 625 (4x2.0 GGz), RAM 4 GB) | ![](charts/xiaomi%20mi%20a1.png) |
 | **Xiaomi Redmi Note 5** Qualcom Snapdragon 636 (8x1.8 GGz), RAM 3 GB) | ![](charts/xioami%20redmi%20note%205.png) |
 
+On average, the download speed using JNI is **4.71** times higher.
+
 ## License
 
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
