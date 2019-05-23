@@ -171,7 +171,7 @@ For the performance tests were read 50 3-D models of .obj format. It was done us
 
 | Device  | File size versus read time |
 | :--- | :---: |
-| **Google Pixel 2**  Qualcom Snapdragon 835 (4x2.35 GGz + 4x1.9 GGz), RAM 4 GB | ![](charts/google%20pixel%202.png)|
+| **Google Pixel 2**  Qualcom Snapdragon 835 (4x2.35 GGz + 4x1.9 GGz), RAM 4 GB | ![](charts/google%20pixel%202.png) |
 | **Huawei HRY - LX1** HiSiliconKirin 710 (4x2.2 GGz + 4x1.7 GGz), RAM 3 GB) | ![](charts/huawei%20hry-lx1.png) |
 | **LGE Nexus 5X** Qualcom Snapdragon 808 (2x1.44 GGz + 2x1.82 GGz), RAM 2 GB) | ![](charts/lge%20nexus%205x.png) |
 | **Samsung SM - G930F** Samsung Exynos 9 Octa 8890 (8x2.3 GGz), RAM 4 GB) | ![](charts/samsung%20sm-g930f.png) |
