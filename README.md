@@ -44,18 +44,18 @@ private static final File OBJ = new File(FILES_PATH, "luxury_house_interior.obj"
 private static final File MTL = new File(FILES_PATH, "luxury_house_interior.mtl");
 
 public void load() {
-  final MarusyaObjLoader marusyaObjLoader = new MarusyaObjLoaderImpl();
-  ResultModel resultModel = null;
-  try {
-    resultModel = marusyaObjLoader.load(
-      OBJ,
-      MTL,
-      1.0f,
-      true);
-  } catch (FileNotFoundException e) {
-    e.printStackTrace();
+    final MarusyaObjLoader marusyaObjLoader = new MarusyaObjLoaderImpl();
+    ResultModel resultModel = null;
+    try {
+      resultModel = marusyaObjLoader.load(
+        OBJ,
+        MTL,
+        1.0f,
+        true);
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+      }
     }
-  }
 }
 ```
 
